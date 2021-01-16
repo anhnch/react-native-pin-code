@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View, Vibration, Text, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { PinCodeT } from './types';
 import PinButton from './PinButton';
@@ -148,16 +147,16 @@ const PinCode = ({
         const buttonStyle = StyleSheet.flatten([defaultStyles.button, styles?.enter?.buttons]);
         return <View style={[defaultStyles.mainContainer, styles?.main]}>
             <View style={[defaultStyles.titleContainer, styles?.enter?.titleContainer]}>
-                <Text style={[defaultStyles.title, styles?.enter?.title]}>{curMode == PinCodeT.Modes.Enter ? curTextOptions.enterTitle : curTextOptions.setTitle}</Text>
+                <Text style={[defaultStyles.title, styles?.enter?.title]}>{curMode == PinCodeT.Modes.Enter ? curTextOptions.enter.title : curTextOptions.set.title}</Text>
                 {curMode == PinCodeT.Modes.Enter ?
                     <>
-                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enterSubTitle}</Text>
-                        {showError && <Text style={defaultStyles.error}>{curTextOptions.enterError}</Text>}
+                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enter.title}</Text>
+                        {showError && <Text style={defaultStyles.error}>{curTextOptions.enter.error}</Text>}
                     </> :
                     <>
-                        {(status == PinCodeT.Statuses.Initial || status == PinCodeT.Statuses.SetFailed) && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.setSubTitle}</Text>}
-                        {status == PinCodeT.Statuses.SetOnce && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.setRepeatText}</Text>}
-                        {showError && <Text style={defaultStyles.error}>{curTextOptions.setError}</Text>}
+                        {(status == PinCodeT.Statuses.Initial || status == PinCodeT.Statuses.SetFailed) && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set.subTitle}</Text>}
+                        {status == PinCodeT.Statuses.SetOnce && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set.repeatText}</Text>}
+                        {showError && <Text style={defaultStyles.error}>{curTextOptions.set.error}</Text>}
                     </>
                 }
             </View>
@@ -186,7 +185,9 @@ const PinCode = ({
                 <View style={defaultStyles.pinNumberRow}>
                     <View style={[defaultStyles.button, { width: 60, height: 60 }]}></View>
                     <PinButton value={'0'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} onPress={onPinButtonPressed} />
-                    <PinButton value={'delete'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={defaultStyles.button} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'delete'} backSpace={options?.backSpace} backSpaceText={textOptions?.enter.backSpace}
+                        disabled={checking || status == PinCodeT.Statuses.EnterFailed}
+                        style={defaultStyles.button} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                 </View>
             </View>
             <View style={[defaultStyles.footer, styles?.enter?.footer]}>
@@ -207,11 +208,11 @@ const PinCode = ({
     } else if (curMode == PinCodeT.Modes.Locked) {
         return <View style={[defaultStyles.mainContainer, styles?.main]}>
             <View style={[defaultStyles.titleContainer, styles?.locked?.titleContainer]}>
-                <Text style={[defaultStyles.title, styles?.locked?.title]}>{curTextOptions.lockedTitle}</Text>
-                <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>{curTextOptions.lockedSubTitle}</Text>
+                <Text style={[defaultStyles.title, styles?.locked?.title]}>{curTextOptions.locked.title}</Text>
+                <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>{curTextOptions.locked.subTitle}</Text>
             </View>
             <View style={defaultStyles.pinContainer}>
-                <Icon name='lock' size={24} color='white' />
+                {options?.lockIcon ? options.lockIcon : <Text style={styles?.locked?.locked}>{textOptions?.locked.lockedText}</Text>}
             </View>
             <View style={defaultStyles.buttonContainer}>
                 <Clock style={styles?.locked?.clockContainer} textStyle={styles?.locked?.clockText}
@@ -226,8 +227,8 @@ const PinCode = ({
     } else if (curMode == PinCodeT.Modes.Reset) {
         return <View style={[defaultStyles.mainContainer, styles?.main]}>
             <View style={[defaultStyles.titleContainer, styles?.reset?.titleContainer]}>
-                <Text style={[defaultStyles.title, styles?.reset?.title]}>{curTextOptions.resetTitle}</Text>
-                <Text style={[defaultStyles.subTitle, styles?.reset?.subTitle]}>{curTextOptions.resetSubTitle}</Text>
+                <Text style={[defaultStyles.title, styles?.reset?.title]}>{curTextOptions.reset?.title}</Text>
+                <Text style={[defaultStyles.subTitle, styles?.reset?.subTitle]}>{curTextOptions.reset?.subTitle}</Text>
             </View>
             <View style={defaultStyles.buttonContainer}>
                 {status == PinCodeT.Statuses.Initial && <>
@@ -236,7 +237,7 @@ const PinCode = ({
                     </TouchableOpacity>
                 </>}
                 {status == PinCodeT.Statuses.ResetPrompted && <>
-                    <Text style={{ color: 'white', marginBottom: 20 }}>Bạn có thực sư muốn xóa không?</Text>
+                    <Text style={{ color: 'white', marginBottom: 20 }}>{ }</Text>
                     <TouchableOpacity onPress={onDeletePIN}>
                         <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>Xác Nhận</Text>
                     </TouchableOpacity>

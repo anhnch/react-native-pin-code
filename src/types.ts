@@ -5,19 +5,7 @@ export namespace PinCodeT {
         visible: boolean;
         mode: Modes;
         options?: Options;
-        textOptions?: {
-            enterTitle?: string;
-            enterSubTitle?: string;
-            enterError?: string;
-            setTitle?: string;
-            setSubTitle?: string;
-            setRepeatText?: string;
-            setError?: string;
-            lockedTitle?: string;
-            lockedSubTitle?: string;
-            resetTitle?: string;
-            resetSubTitle?: string;
-        },
+        textOptions?: TextOptions,
         styles?: {
             main?: ViewStyle | ViewStyle[],
             enter?: {
@@ -37,6 +25,7 @@ export namespace PinCodeT {
                 subTitle?: TextStyle | TextStyle[];
                 clockContainer?: ViewStyle | ViewStyle[];
                 clockText?: TextStyle | TextStyle[];
+                locked?: TextStyle | TextStyle[];
             },
             reset?: {
                 titleContainer?: ViewStyle | ViewStyle[];
@@ -68,21 +57,46 @@ export namespace PinCodeT {
         SetOnce = 'set.once',
         SetFailed = 'set.failed',
         SetSucceeded = 'set.succeeded',
-        
+
         ResetPrompted = 'reset.prompted',
         ResetSucceeded = 'reset.succeeded'
     }
 
-    
+
 
     export interface Options {
         disableLock?: boolean;
         lockDuration?: number;
         maxAttemp?: number;
         allowReset?: boolean;
+        backSpace?: JSX.Element;
+        lockIcon?: JSX.Element;
     }
 
-    export type TextOptions = Record<string, string>;
+    export interface TextOptions {
+        enter: {
+            title?: string;
+            subTitle?: string;
+            error?: string;
+            backSpace?: string;
+        },
+        set: {
+            title?: string;
+            subTitle?: string;
+            repeatText?: string;
+            error?: string;
+        },
+        locked: {
+            title?: string;
+            subTitle?: string;
+            lockedText?: string;
+        },
+        reset?: {
+            title?: string;
+            subTitle?: string;
+            confirm?: string;
+        }
+    }
 
     export const DEFAULT = {
         Options: {
@@ -92,17 +106,28 @@ export namespace PinCodeT {
             maxAttempt: 4
         },
         TextOptions: {
-            enterTitle: 'Nhập mã PIN',
-            enterSubTitle: 'Nhập mã PIN 4 số để truy cập.',
-            enterError: 'Sai mã PIN! Hãy nhập lại.',
-            setTitle: 'Thiết lập PIN',
-            setSubTitle: 'Nhập 4 số.',
-            setRepeatText: 'Nhập lại mã PIN lần nữa.',
-            setError: 'Mã PIN không khớp. Hãy thực hiện lại.',
-            lockedTitle: 'Tạm khóa',
-            lockedSubTitle: `Bạn đã nhập sai mã PIN nhiều lần.\nỨng dụng sẽ bị khóa tạm thời.`,
-            resetTitle: 'Quên mã PIN',
-            resetSubTitle: `Xóa mã PIN sẽ xóa tất cả những dữ liệu đã lưu`,
+            enter: {
+                title: 'Nhập mã PIN',
+                subTitle: 'Nhập mã PIN 4 số để truy cập.',
+                error: 'Sai mã PIN! Hãy nhập lại.',
+                backSpace: 'Xóa'
+            },
+            set: {
+                title: 'Thiết lập PIN',
+                subTitle: 'Nhập 4 số.',
+                repeat: 'Nhập lại mã PIN lần nữa.',
+                error: 'Mã PIN không khớp. Hãy thực hiện lại.',
+            },
+            locked: {
+                title: 'Tạm khóa',
+                subTitle: `Bạn đã nhập sai mã PIN nhiều lần.\nỨng dụng sẽ bị khóa tạm thời.`,
+                lockedText: 'Khóa',
+            },
+            reset: {
+                title: 'Quên mã PIN',
+                subTitle: `Xóa mã PIN sẽ xóa tất cả những dữ liệu đã lưu`,
+                confirm: 'Bạn có thực sư muốn xóa không?'
+            }
         }
     }
 }

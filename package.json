@@ -1,5 +1,5 @@
 {
-  "name": "react-native-pin-code",
+  "name": "@anhnch/react-native-pincode",
   "version": "1.0.0",
   "description": "Pin Code component for React Native",
   "scripts": {
@@ -8,22 +8,19 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/anhnch/react-native-pin-code.git",
+  "repository": "https://github.com/anhnch/react-native-pincode.git",
   "author": "Anh Nguyen <anhnch@gmail.com> https://github.com/anhnch",
   "license": "MIT",
+  "private": false,
   "devDependencies": {
     "@types/react": "^17.0.0",
     "@types/react-native": "^0.63.45",
-    "@types/react-native-vector-icons": "^6.4.6",
     "react": "^17.0.1",
     "react-native": "^0.63.4",
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@react-native-community/async-storage": "^1.12.1",
-    "i18next": "^19.8.4",
-    "react-i18next": "^11.8.5",
-    "react-native-vector-icons": "^7.1.0"
+    "@react-native-community/async-storage": "^1.12.1"
   },
   "files": [
     "dist/**/*"

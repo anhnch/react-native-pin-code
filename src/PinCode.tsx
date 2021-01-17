@@ -65,12 +65,12 @@ const PinCode = ({
         setCurTextOptions(merged);
     }, [textOptions])
 
-    async function changeMode(newMode: PinCodeT.Modes) {
+    function changeMode(newMode: PinCodeT.Modes) {
         setCurMode(newMode);
         if (onModeChanged) onModeChanged(newMode);
     }
 
-    async function changeStatus(newStatus: PinCodeT.Statuses) {
+    function changeStatus(newStatus: PinCodeT.Statuses) {
         setStatus(newStatus);
         if (onStatusChanged) onStatusChanged(curMode, newStatus);
     }

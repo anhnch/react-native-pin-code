@@ -1,7 +1,107 @@
-<style>table { width: 100%; }</style>
-**React Native Pincode**
+#React Native Pincode
 
 The options look intimidating, but don't worry. Almost all of them are optional while allowing you to customize the text and layout.
+
+## Basic usage
+
+```JSX
+import { PinCode, PinCodeT, hasSetPIN } from '@anhnch/react-native-pincode';
+const Screen = () => {
+  return <View>
+    <PinCode mode={PinCodeT.modes.enter} visible={true} 
+      styles={{ 
+        main: { position: 'absolute', left: 0, right; 0, top: 0, bottom: 0, zIndex: 99 }
+      }} 
+    />
+  </View>
+}
+```
+
+## Full options usage
+```JSX
+//...
+import { PinCode, PinCodeT, hasSetPIN } from '@anhnch/react-native-pincode';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const customTexts = {
+    enter: {
+        title: 'Custom enter PIN title',
+        subTitle: 'custom enter PIN sub title',
+        error: 'custom enter PIN error',
+        backSpace: 'Del'
+    },
+    set: {
+        title: 'Custom set PIN title',
+        subTitle: 'Custom set PIN sub title',
+        repeat: 'Custom enter PIN again',
+        error: 'Custom repeat PIN error',
+    },
+    locked: {
+        title: 'Custom locked title',
+        subTitle: `Custom locked sub title`,
+        lockedText: 'Locked',
+    },
+    reset: {
+        title: 'Custom reset PIN title',
+        subTitle: `Custom reset PIN sub title`,
+        confirm: 'Custom confirm message'
+    }
+};
+
+const customStyles = { 
+  main: { position: 'absolute', left: 0, right; 0, top: 0, bottom: 0, zIndex: 99 },
+  enter: {
+    titleContainer: { borderWidth: 1 },
+    title: { color: 'yellow' },
+    subTitle: { color: 'red' },
+    buttonContainer: { borderWidth: 1 },
+    buttonText: { color: 'blue' },
+    buttons: { backgroundColor: 'green' },
+    footer: { borderWidth: 1 },
+    footerText: { color: 'purple' },
+    pinContainer: { borderWidth: 1 }
+  },
+  locked: {
+    titleContainer: { borderWidth: 1 },
+    title: { color: 'yellow' },
+    subTitle: { color: 'red' },
+    clockContainer: { borderWidth: 1 },
+    clockText: { color: 'red' },
+    locked: { color: 'yellow' }
+  },
+  reset: {
+    titleContainer: { borderWidth: 1 },
+    title: { color: 'yellow' },
+    subTitle: { color: 'red' },
+    buttons: { backgroundColor: 'green' }
+  }
+}
+
+const App = () => {
+  const [visible, setVisible] = useState(true);
+  const [mode, setMode] = useState<PintCodeT.Modes>(PintCodeT.Modes.Enter);
+
+  useEffect(() => {
+    hasSetPIN().then(hasPin => setVisible(hasPin));
+  }, [])
+
+  return <View>
+    <PinCode mode={mode} visible={visible} 
+      onSetCancel={() => setVisible(false)}
+      onSetSuccess={(newPin:string) => console.log('A new pin has been set: ' + newPin)}
+      onEnterSuccess={(pin:string) => console.log('User has entered pin: ' + pin)}
+      onResetSuccess={() => console.log('Do clean up app data when pin is reset')}
+      onModeChanged={(mode:PinCodeT.Modes) => console.log('Mode has been changed: ', mode)}
+      onStatusChanged={(mode:PinCodeT.Modes, status:PinCodeT.Statuses) => console.log('Status has been changed: ', `${status} [${mode}]`)}
+      options={{
+        backSpace: <Icon name='backspace' size={40} color='white' />,
+        lockIcon: <Icon name='lock' size={24} color='white' />
+      }}
+      textOptions={customTexts}
+      styles={customStyles} />
+  </View>
+}
+```
 
 ## Properties
 | Name           | Description                                                                                                                                                                                                              | Required | Default |

@@ -103,7 +103,7 @@ const PinCode = ({
         } else {
             ret = await checkPin(newPin);
         }
-        
+
         setChecking(false);
         setPin('');
         if (ret) {
@@ -260,17 +260,17 @@ const PinCode = ({
             <View style={defaultStyles.buttonContainer}>
                 {status == PinCodeT.Statuses.Initial && <>
                     <TouchableOpacity onPress={() => changeStatus(PinCodeT.Statuses.ResetPrompted)}>
-                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.reset}</Text>
+                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.resetButton}</Text>
                     </TouchableOpacity>
                 </>}
                 {status == PinCodeT.Statuses.ResetPrompted && <>
-                    <Text style={{ color: 'white', marginBottom: 20 }}>{ }</Text>
+                    <Text style={{ color: 'white', marginBottom: 20 }}>{curTextOptions.reset?.confirm}</Text>
                     <TouchableOpacity onPress={onDeletePIN}>
-                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.confirm}</Text>
+                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.confirmButton}</Text>
                     </TouchableOpacity>
                 </>}
                 <TouchableOpacity onPress={() => changeMode(PinCodeT.Modes.Enter)} style={{ marginTop: 20 }}>
-                    <Text style={[{ fontSize: 14, color: 'white' }, styles?.reset?.buttons]}>Trở lại</Text>
+                    <Text style={[{ fontSize: 14, color: 'white' }, styles?.reset?.buttons]}>{curTextOptions.reset?.backButton}</Text>
                 </TouchableOpacity>
             </View>
         </View>

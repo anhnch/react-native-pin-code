@@ -34,12 +34,12 @@ export namespace PinCodeT {
                 buttons?: TextStyle | TextStyle[];
             }
         }
-        onEnterSuccess: () => void;
-        onSetSuccess: () => void;
+        onEnterSuccess: (pin?: string) => void;
+        onSetSuccess: (pin?: string) => void;
         onSetCancel?: () => void;
         onResetSuccess: () => void;
-        onModeChanged?: (mode: Modes) => void;
-        onStatusChanged?: (mode: Modes, status: Statuses) => void;
+        onModeChanged?: (mode?: Modes) => void;
+        onStatusChanged?: (mode?: Modes, status?: Statuses) => void;
     }
 
     export enum Modes {
@@ -74,19 +74,19 @@ export namespace PinCodeT {
     }
 
     export interface TextOptions {
-        enter: {
+        enter?: {
             title?: string;
             subTitle?: string;
             error?: string;
             backSpace?: string;
         },
-        set: {
+        set?: {
             title?: string;
             subTitle?: string;
-            repeatText?: string;
+            repeat?: string;
             error?: string;
         },
-        locked: {
+        locked?: {
             title?: string;
             subTitle?: string;
             lockedText?: string;
@@ -107,26 +107,26 @@ export namespace PinCodeT {
         },
         TextOptions: {
             enter: {
-                title: 'Nhập mã PIN',
-                subTitle: 'Nhập mã PIN 4 số để truy cập.',
-                error: 'Sai mã PIN! Hãy nhập lại.',
-                backSpace: 'Xóa'
+                title: 'Enter PIN',
+                subTitle: 'Enter 4-digit PIN to access.',
+                error: 'Wrong PIN! Try again.',
+                backSpace: 'Delete'
             },
             set: {
-                title: 'Thiết lập PIN',
-                subTitle: 'Nhập 4 số.',
-                repeat: 'Nhập lại mã PIN lần nữa.',
-                error: 'Mã PIN không khớp. Hãy thực hiện lại.',
+                title: 'Set up a new PIN',
+                subTitle: 'Enter 4 digits.',
+                repeat: 'Enter new PIN again.',
+                error: `PIN don't match. Start the process again.`,
             },
             locked: {
-                title: 'Tạm khóa',
-                subTitle: `Bạn đã nhập sai mã PIN nhiều lần.\nỨng dụng sẽ bị khóa tạm thời.`,
-                lockedText: 'Khóa',
+                title: 'Locked',
+                subTitle: `Your have entered wrong PIN many times.\nThe app is temporarily locked.`,
+                lockedText: 'Locked',
             },
             reset: {
-                title: 'Quên mã PIN',
-                subTitle: `Xóa mã PIN sẽ xóa tất cả những dữ liệu đã lưu`,
-                confirm: 'Bạn có thực sư muốn xóa không?'
+                title: 'Forgot PIN?',
+                subTitle: `Remove the PIN may wipe out the app data and settings.`,
+                confirm: 'Are you sure you want remove the PIN?'
             }
         }
     }

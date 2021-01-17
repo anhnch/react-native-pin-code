@@ -42,7 +42,27 @@ const PinCode = ({
     }, [options])
 
     useEffect(() => {
-        setCurTextOptions({ ...PinCodeT.DEFAULT.TextOptions, ...textOptions });
+        if (!textOptions) return;
+        // there are only 2 levels, don't use library for least dependencies
+        const merged:PinCodeT.TextOptions = {
+            enter: {
+                ...PinCodeT.DEFAULT.TextOptions.enter,
+                ...textOptions.enter
+            },
+            set: {
+                ...PinCodeT.DEFAULT.TextOptions.set,
+                ...textOptions.set
+            },
+            locked: {
+                ...PinCodeT.DEFAULT.TextOptions.locked,
+                ...textOptions.locked
+            },
+            reset: {
+                ...PinCodeT.DEFAULT.TextOptions.reset,
+                ...textOptions.reset
+            }
+        }
+        setCurTextOptions(merged);
     }, [textOptions])
 
     async function changeMode(newMode: PinCodeT.Modes) {
@@ -81,7 +101,7 @@ const PinCode = ({
         setPin('');
         if (ret) {
             setFailureCount(0);
-            onEnterSuccess();
+            onEnterSuccess(newPin);
             changeStatus(PinCodeT.Statuses.EnterSucceeded);
         } else {
             if (!curOptions.disableLock && failureCount == curOptions.maxAttemp) {
@@ -111,7 +131,7 @@ const PinCode = ({
             if (lastPin == newPin) { // pin matched
                 savePin(newPin);
                 changeStatus(PinCodeT.Statuses.SetSucceeded);
-                onSetSuccess();
+                onSetSuccess(newPin);
             } else { // pin doesn't matched
                 changeStatus(PinCodeT.Statuses.SetFailed);
                 setShowError(true);
@@ -147,16 +167,16 @@ const PinCode = ({
         const buttonStyle = StyleSheet.flatten([defaultStyles.button, styles?.enter?.buttons]);
         return <View style={[defaultStyles.mainContainer, styles?.main]}>
             <View style={[defaultStyles.titleContainer, styles?.enter?.titleContainer]}>
-                <Text style={[defaultStyles.title, styles?.enter?.title]}>{curMode == PinCodeT.Modes.Enter ? curTextOptions.enter.title : curTextOptions.set.title}</Text>
+                <Text style={[defaultStyles.title, styles?.enter?.title]}>{curMode == PinCodeT.Modes.Enter ? curTextOptions.enter?.title : curTextOptions.set?.title}</Text>
                 {curMode == PinCodeT.Modes.Enter ?
                     <>
-                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enter.title}</Text>
-                        {showError && <Text style={defaultStyles.error}>{curTextOptions.enter.error}</Text>}
+                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enter?.title}</Text>
+                        {showError && <Text style={defaultStyles.error}>{curTextOptions.enter?.error}</Text>}
                     </> :
                     <>
-                        {(status == PinCodeT.Statuses.Initial || status == PinCodeT.Statuses.SetFailed) && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set.subTitle}</Text>}
-                        {status == PinCodeT.Statuses.SetOnce && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set.repeatText}</Text>}
-                        {showError && <Text style={defaultStyles.error}>{curTextOptions.set.error}</Text>}
+                        {(status == PinCodeT.Statuses.Initial || status == PinCodeT.Statuses.SetFailed) && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.subTitle}</Text>}
+                        {status == PinCodeT.Statuses.SetOnce && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.repeat}</Text>}
+                        {showError && <Text style={defaultStyles.error}>{curTextOptions.set?.error}</Text>}
                     </>
                 }
             </View>
@@ -185,7 +205,7 @@ const PinCode = ({
                 <View style={defaultStyles.pinNumberRow}>
                     <View style={[defaultStyles.button, { width: 60, height: 60 }]}></View>
                     <PinButton value={'0'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} onPress={onPinButtonPressed} />
-                    <PinButton value={'delete'} backSpace={options?.backSpace} backSpaceText={textOptions?.enter.backSpace}
+                    <PinButton value={'delete'} backSpace={options?.backSpace} backSpaceText={curTextOptions?.enter?.backSpace}
                         disabled={checking || status == PinCodeT.Statuses.EnterFailed}
                         style={defaultStyles.button} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                 </View>
@@ -208,11 +228,11 @@ const PinCode = ({
     } else if (curMode == PinCodeT.Modes.Locked) {
         return <View style={[defaultStyles.mainContainer, styles?.main]}>
             <View style={[defaultStyles.titleContainer, styles?.locked?.titleContainer]}>
-                <Text style={[defaultStyles.title, styles?.locked?.title]}>{curTextOptions.locked.title}</Text>
-                <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>{curTextOptions.locked.subTitle}</Text>
+                <Text style={[defaultStyles.title, styles?.locked?.title]}>{curTextOptions.locked?.title}</Text>
+                <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>{curTextOptions.locked?.subTitle}</Text>
             </View>
             <View style={defaultStyles.pinContainer}>
-                {options?.lockIcon ? options.lockIcon : <Text style={styles?.locked?.locked}>{textOptions?.locked.lockedText}</Text>}
+                {options?.lockIcon ? options.lockIcon : <Text style={styles?.locked?.locked}>{curTextOptions.locked?.lockedText}</Text>}
             </View>
             <View style={defaultStyles.buttonContainer}>
                 <Clock style={styles?.locked?.clockContainer} textStyle={styles?.locked?.clockText}
@@ -251,6 +271,8 @@ const PinCode = ({
     return <></>;
 
 }
+
+
 
 const defaultStyles = StyleSheet.create({
     mainContainer: { flex: 1, backgroundColor: 'gray', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20, paddingTop: 40 },

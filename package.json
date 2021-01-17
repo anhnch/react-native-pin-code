@@ -8,7 +8,7 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/anhnch/react-native-pincode.git",
+  "repository": "https://github.com/anhnch/react-native-pin-code.git",
   "author": "Anh Nguyen <anhnch@gmail.com> https://github.com/anhnch",
   "license": "MIT",
   "private": false,

@@ -40,6 +40,7 @@ export namespace PinCodeT {
         onResetSuccess: () => void;
         onModeChanged?: (mode?: Modes) => void;
         onStatusChanged?: (mode?: Modes, status?: Statuses) => void;
+        validatePin?: (pin: string) => Promise<boolean>;
     }
 
     export enum Modes {

@@ -18,6 +18,7 @@ const PinCode = ({
     onResetSuccess,
     onModeChanged,
     onStatusChanged,
+    validatePin,
 }: PinCodeT.PinCodeT) => {
     const [pin, setPin] = useState('');
     const [lastPin, setLastPin] = useState('');
@@ -96,7 +97,13 @@ const PinCode = ({
 
     async function processEnterPin(newPin: string) {
         setChecking(true);
-        const ret = await checkPin(newPin);
+        let ret = false;
+        if (validatePin) {
+            ret = await validatePin(newPin);
+        } else {
+            ret = await checkPin(newPin);
+        }
+        
         setChecking(false);
         setPin('');
         if (ret) {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View, Vibration, Text, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import { PinCodeT } from './types';
+import { PinCodeT, DEFAULT } from './types';
 import PinButton from './PinButton';
 import Clock from './Clock';
 
@@ -26,8 +26,8 @@ const PinCode = ({
     const [status, setStatus] = useState<PinCodeT.Statuses>(PinCodeT.Statuses.Initial);
     const [failureCount, setFailureCount] = useState(0);
     const [showError, setShowError] = useState(false);
-    const [curOptions, setCurOptions] = useState<PinCodeT.Options>(PinCodeT.DEFAULT.Options);
-    const [curTextOptions, setCurTextOptions] = useState<PinCodeT.TextOptions>(PinCodeT.DEFAULT.TextOptions);
+    const [curOptions, setCurOptions] = useState<PinCodeT.Options>(DEFAULT.Options);
+    const [curTextOptions, setCurTextOptions] = useState<PinCodeT.TextOptions>(DEFAULT.TextOptions);
 
     useEffect(() => {
         setCurMode(mode);
@@ -38,27 +38,27 @@ const PinCode = ({
     }, [mode])
 
     useEffect(() => {
-        setCurOptions({ ...PinCodeT.DEFAULT.Options, ...options });
+        setCurOptions({ ...DEFAULT.Options, ...options });
     }, [options])
 
     useEffect(() => {
         if (!textOptions) return;
         // there are only 2 levels, don't use library for least dependencies
-        const merged:PinCodeT.TextOptions = {
+        const merged: PinCodeT.TextOptions = {
             enter: {
-                ...PinCodeT.DEFAULT.TextOptions.enter,
+                ...DEFAULT.TextOptions.enter,
                 ...textOptions.enter
             },
             set: {
-                ...PinCodeT.DEFAULT.TextOptions.set,
+                ...DEFAULT.TextOptions.set,
                 ...textOptions.set
             },
             locked: {
-                ...PinCodeT.DEFAULT.TextOptions.locked,
+                ...DEFAULT.TextOptions.locked,
                 ...textOptions.locked
             },
             reset: {
-                ...PinCodeT.DEFAULT.TextOptions.reset,
+                ...DEFAULT.TextOptions.reset,
                 ...textOptions.reset
             }
         }
@@ -213,7 +213,7 @@ const PinCode = ({
             <View style={[defaultStyles.footer, styles?.enter?.footer]}>
                 {curMode == PinCodeT.Modes.Enter && curOptions.allowReset &&
                     <Pressable onPress={() => changeMode(PinCodeT.Modes.Reset)}>
-                        <Text style={[{ color: 'white' }, styles?.enter?.footerText]}>Quên mã PIN?</Text>
+                        <Text style={[{ color: 'white' }, styles?.enter?.footerText]}>{curTextOptions.enter?.footerText}</Text>
                     </Pressable>
                 }
                 {curMode == PinCodeT.Modes.Set &&
@@ -221,7 +221,7 @@ const PinCode = ({
                         setPin('');
                         setLastPin('');
                         if (onSetCancel) onSetCancel();
-                    }}><Text style={{ color: 'white' }}>Hủy</Text></Pressable>
+                    }}><Text style={{ color: 'white' }}>{curTextOptions.set?.cancel}</Text></Pressable>
                 }
             </View>
         </View >
@@ -253,13 +253,13 @@ const PinCode = ({
             <View style={defaultStyles.buttonContainer}>
                 {status == PinCodeT.Statuses.Initial && <>
                     <TouchableOpacity onPress={() => changeStatus(PinCodeT.Statuses.ResetPrompted)}>
-                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>Xóa mã PIN</Text>
+                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.reset}</Text>
                     </TouchableOpacity>
                 </>}
                 {status == PinCodeT.Statuses.ResetPrompted && <>
                     <Text style={{ color: 'white', marginBottom: 20 }}>{ }</Text>
                     <TouchableOpacity onPress={onDeletePIN}>
-                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>Xác Nhận</Text>
+                        <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.confirm}</Text>
                     </TouchableOpacity>
                 </>}
                 <TouchableOpacity onPress={() => changeMode(PinCodeT.Modes.Enter)} style={{ marginTop: 20 }}>

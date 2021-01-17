@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
-import { PinCodeT } from './types';
+import { PinCodeT, DEFAULT } from './types';
 
 const Clock = ({
-	duration = PinCodeT.DEFAULT.Options.lockedDuration,
+	duration = DEFAULT.Options.lockedDuration,
 	style,
 	textStyle,
 	onFinish

@@ -62,8 +62,6 @@ export namespace PinCodeT {
         ResetSucceeded = 'reset.succeeded'
     }
 
-
-
     export interface Options {
         disableLock?: boolean;
         lockDuration?: number;
@@ -79,12 +77,14 @@ export namespace PinCodeT {
             subTitle?: string;
             error?: string;
             backSpace?: string;
+            footerText?: string;
         },
         set?: {
             title?: string;
             subTitle?: string;
             repeat?: string;
             error?: string;
+            cancel?: string;
         },
         locked?: {
             title?: string;
@@ -94,40 +94,49 @@ export namespace PinCodeT {
         reset?: {
             title?: string;
             subTitle?: string;
+            reset?: string;
+            resetButton?: string,
             confirm?: string;
+            confirmButton?: string;
+            backButton?: string;
         }
     }
+}
 
-    export const DEFAULT = {
-        Options: {
-            allowReset: true,
-            disableLock: false,
-            lockedDuration: 600000,
-            maxAttempt: 4
+export const DEFAULT = {
+    Options: {
+        allowReset: true,
+        disableLock: false,
+        lockedDuration: 600000,
+        maxAttempt: 4
+    },
+    TextOptions: {
+        enter: {
+            title: 'Enter PIN',
+            subTitle: 'Enter 4-digit PIN to access.',
+            error: 'Wrong PIN! Try again.',
+            backSpace: 'Delete',
+            footerText: 'Forgot PIN?'
         },
-        TextOptions: {
-            enter: {
-                title: 'Enter PIN',
-                subTitle: 'Enter 4-digit PIN to access.',
-                error: 'Wrong PIN! Try again.',
-                backSpace: 'Delete'
-            },
-            set: {
-                title: 'Set up a new PIN',
-                subTitle: 'Enter 4 digits.',
-                repeat: 'Enter new PIN again.',
-                error: `PIN don't match. Start the process again.`,
-            },
-            locked: {
-                title: 'Locked',
-                subTitle: `Your have entered wrong PIN many times.\nThe app is temporarily locked.`,
-                lockedText: 'Locked',
-            },
-            reset: {
-                title: 'Forgot PIN?',
-                subTitle: `Remove the PIN may wipe out the app data and settings.`,
-                confirm: 'Are you sure you want remove the PIN?'
-            }
+        set: {
+            title: 'Set up a new PIN',
+            subTitle: 'Enter 4 digits.',
+            repeat: 'Enter new PIN again.',
+            error: `PIN don't match. Start the process again.`,
+            cancel: 'Cancel'
+        },
+        locked: {
+            title: 'Locked',
+            subTitle: `Your have entered wrong PIN many times.\nThe app is temporarily locked.`,
+            lockedText: 'Locked',
+        },
+        reset: {
+            title: 'Forgot PIN?',
+            subTitle: `Remove the PIN may wipe out the app data and settings.`,
+            resetButton: 'Reset',
+            confirm: 'Are you sure you want remove the PIN?',
+            confirmButton: 'Confirm',
+            backButton: 'Back'
         }
     }
 }

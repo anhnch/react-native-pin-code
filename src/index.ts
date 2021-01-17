@@ -2,9 +2,9 @@ import AsyncStorage from "@react-native-community/async-storage";
 import PinCode from "./PinCode";
 import { PinCodeT } from "./types";
 
-async function hasSetPIN() {
+async function hasSetPIN(): Promise<boolean> {
     const pin = await AsyncStorage.getItem('@pin');
-    if (pin && pin.length==4) {
+    if (pin && pin.length == 4) {
         return true;
     }
     return false;

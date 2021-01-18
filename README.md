@@ -1,7 +1,8 @@
 # React Native Pincode
+<img src="https://user-images.githubusercontent.com/131125/104954355-ab907800-59fa-11eb-9873-18916e23d611.png" width="75%"/>
 
 This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simpler, more organized and just enough options. I also add the Reset PIN code feature.
-I rewrite for personal usage, so the business logic is very limited. If you find this useful, you can suggest improvements. 
+I rewrite for personal usage, so the business logic is very limited. If you find this useful, you can suggest improvements. PRs are welcome.
 
 The options look intimidating but don't worry. Almost all of them are optional.
 

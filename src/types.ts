@@ -123,13 +123,13 @@ export const DEFAULT = {
         },
         locked: {
             title: 'Locked',
-            subTitle: `Your have entered wrong PIN {{maxAttempt}} times.\nThe app is temporarily locked in {{lockDuration}}.`,
+            subTitle: `Your have entered wrong PIN {{maxAttempt}} times.\nThe app is temporarily locked in {{lockedDuration}}.`,
             lockedText: 'Locked',
         },
         reset: {
             title: 'Forgot PIN?',
             subTitle: `Remove the PIN may wipe out the app data and settings.`,
-            resetButton: 'Reset',
+            resetButton: 'Remove',
             confirm: 'Are you sure you want remove the PIN?',
             confirmButton: 'Confirm',
             backButton: 'Back'

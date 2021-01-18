@@ -295,9 +295,9 @@ const Pin = ({ pin, pinLength, style }: {
     const items: JSX.Element[] = [];
     for (let i = 1; i <= pinLength; i++) {
         items.push(<Text key={'pin_' + i} style={{
-            width: pin.length == i ? 12 : 6,
-            height: pin.length == i ? 12 : 6,
-            borderRadius: pin.length == i ? 6 : 3,
+            width: pin.length >= i ? 12 : 6,
+            height: pin.length >= i ? 12 : 6,
+            borderRadius: pin.length >= i ? 6 : 3,
             backgroundColor: 'white',
             overflow: 'hidden',
             marginHorizontal: 10

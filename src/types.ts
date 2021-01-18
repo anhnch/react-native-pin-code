@@ -136,3 +136,6 @@ export const DEFAULT = {
         }
     }
 }
+
+
+export const PIN_KEY = '@pincode';

@@ -158,7 +158,7 @@ The text options are grouped by screen for the ease to find. You can pass the te
       title: 'custom set title',
       subTitle: 'custom sub title',
       repeat: 'Enter PIN again',
-      error: 'repeated PIN doesn't match',
+      error: `repeated PIN doesn't match`,
       cancelText: 'Cancel'
     },
     locked: {

@@ -1,6 +1,6 @@
 # React Native Pincode
 
-This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simpler, more organized, and just enough options. I also add the Reset PIN code feature.
+This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simpler, more organized and just enough options. I also add the Reset PIN code feature.
 I rewrite for personal usage, so the business logic is very limited. If you find this useful, you can suggest improvements. 
 
 The options look intimidating but don't worry. Almost all of them are optional.
@@ -102,6 +102,11 @@ const App = () => {
       onResetSuccess={() => console.log('Do clean up app data when PIN is reset')}
       onModeChanged={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => console.log(`Mode has been changed, from ${lastMode} to ${newMode}`)}
       options={{
+        pinLength: 6,
+        maxAttempt: 4,
+        lockedDuration: 10000,
+        allowedReset: true,
+        disableLock: false,
         backSpace: <Icon name='backspace' size={40} color='white' />,
         lockIcon: <Icon name='lock' size={24} color='white' />
       }}
@@ -129,6 +134,7 @@ const App = () => {
 ## Options
 | Name         | Description                                                                                                                                                                                                                                        | Required | Default |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| pinLength    | Number of digits                                                                                                                                                                                                                                   | false    | 4       |
 | disableLock  | By default, the locked screen is shown when maxAttempt has reached. Set this to true to disable the locked mode                                                                                                                                    | false    | false   |
 | maxAttempt   | The number of attempts when entering PIN. When user enters wrong PIN for a number of times, the Locked screen is shown                                                                                                                             | false    | 10      |
 | lockDuration | The time that the Locked screen is shown in miliseconds                                                                                                                                                                                            | false    | 60000   |

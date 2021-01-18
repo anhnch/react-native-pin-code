@@ -39,7 +39,6 @@ export namespace PinCodeT {
         onSetCancel?: () => void;
         onResetSuccess: () => void;
         onModeChanged?: (lastMode: Modes, newMode?: Modes) => void;
-        // onStatusChanged?: (mode?: Modes, status?: Statuses) => void;
         checkPin?: (pin: string) => Promise<boolean>;
     }
 
@@ -58,6 +57,7 @@ export namespace PinCodeT {
     }
 
     export interface Options {
+        pinLength?: number;
         disableLock?: boolean;
         lockDuration?: number;
         maxAttempt?: number;
@@ -100,22 +100,23 @@ export namespace PinCodeT {
 
 export const DEFAULT = {
     Options: {
+        pinLength: 4,
         allowReset: true,
         disableLock: false,
         lockedDuration: 600000,
-        maxAttempt: 4
+        maxAttempt: 10
     },
     TextOptions: {
         enter: {
             title: 'Enter PIN',
-            subTitle: 'Enter 4-digit PIN to access.',
+            subTitle: 'Enter {{pinLength}}-digit PIN to access.',
             error: 'Wrong PIN! Try again.',
             backSpace: 'Delete',
             footerText: 'Forgot PIN?'
         },
         set: {
             title: 'Set up a new PIN',
-            subTitle: 'Enter 4 digits.',
+            subTitle: 'Enter {{pinLength}} digits.',
             repeat: 'Enter new PIN again.',
             error: `PIN don't match. Start the process again.`,
             cancel: 'Cancel'

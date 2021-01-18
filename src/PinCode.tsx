@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View, Vibration, Text, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Vibration, Text, TouchableOpacity, Platform, ViewStyle } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { PinCodeT, DEFAULT } from './types';
@@ -88,7 +88,7 @@ const PinCode = ({
 
         setPin(newPin);
 
-        if (newPin.length == 4) {
+        if (newPin.length == curOptions.pinLength) {
             if (curMode == PinCodeT.Modes.Enter) {
                 await processEnterPin(newPin)
             } else if (curMode == PinCodeT.Modes.Set) {
@@ -100,15 +100,16 @@ const PinCode = ({
     async function processEnterPin(newPin: string) {
         disableButtons(true);
         const ret = await checkThePin(newPin);
-        disableButtons(false);
         setPin('');
         if (ret) {
             setFailureCount(0);
             onEnterSuccess(newPin);
             setStatus(PinCodeT.Statuses.Initial);
+            disableButtons(false);
         } else {
             if (!curOptions.disableLock && failureCount >= (curOptions.maxAttempt || DEFAULT.Options.maxAttempt) - 1) {
                 switchMode(PinCodeT.Modes.Locked);
+                disableButtons(false);
             } else {
                 setFailureCount(failureCount + 1);
                 setStatus(PinCodeT.Statuses.Initial);
@@ -139,7 +140,9 @@ const PinCode = ({
                 onSetSuccess(newPin);
             } else { // pin doesn't matched
                 setShowError(true);
-                Vibration.vibrate();
+                if (Platform.OS === 'ios') {
+                    Vibration.vibrate(); // android requires VIBRATE permission
+                }
                 setTimeout(() => setShowError(false), 3000);
                 setTimeout(() => setPin(''), 1500);
             }
@@ -179,21 +182,20 @@ const PinCode = ({
                 <Text style={[defaultStyles.title, styles?.enter?.title]}>{curMode == PinCodeT.Modes.Enter ? curTextOptions.enter?.title : curTextOptions.set?.title}</Text>
                 {curMode == PinCodeT.Modes.Enter ?
                     <>
-                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enter?.subTitle}</Text>
+                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>
+                            {curTextOptions.enter?.subTitle?.replace('{{pinLength}}', (curOptions.pinLength || DEFAULT.Options.pinLength).toString())}
+                        </Text>
                         {showError && <Text style={defaultStyles.error}>{curTextOptions.enter?.error}</Text>}
                     </> : <>
-                        {status == PinCodeT.Statuses.Initial && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.subTitle}</Text>}
+                        {status == PinCodeT.Statuses.Initial && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>
+                            {curTextOptions.set?.subTitle?.replace('{{pinLength}}', (curOptions.pinLength || DEFAULT.Options.pinLength).toString())}</Text>
+                        }
                         {status == PinCodeT.Statuses.SetOnce && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.repeat}</Text>}
                         {showError && <Text style={defaultStyles.error}>{curTextOptions.set?.error}</Text>}
                     </>
                 }
             </View>
-            <View style={[defaultStyles.pinContainer, styles?.enter?.pinContainer]}>
-                <Text style={{ width: pin.length >= 1 ? 12 : 6, height: pin.length >= 1 ? 12 : 6, borderRadius: pin.length >= 1 ? 6 : 3, backgroundColor: 'white', overflow: 'hidden', marginHorizontal: 10 }}></Text>
-                <Text style={{ width: pin.length >= 2 ? 12 : 6, height: pin.length >= 2 ? 12 : 6, borderRadius: pin.length >= 2 ? 6 : 3, backgroundColor: 'white', overflow: 'hidden', marginHorizontal: 10 }}></Text>
-                <View style={{ width: pin.length >= 3 ? 12 : 6, height: pin.length >= 3 ? 12 : 6, borderRadius: pin.length >= 3 ? 6 : 3, backgroundColor: 'white', overflow: 'hidden', marginHorizontal: 10 }}></View>
-                <View style={{ width: pin.length >= 4 ? 12 : 6, height: pin.length >= 4 ? 12 : 6, borderRadius: pin.length >= 4 ? 6 : 3, backgroundColor: 'white', overflow: 'hidden', marginHorizontal: 10 }}></View>
-            </View>
+            <Pin pin={pin} pinLength={curOptions.pinLength || DEFAULT.Options.pinLength} style={styles?.enter?.pinContainer} />
             <View style={[defaultStyles.buttonContainer, styles?.enter?.buttonContainer]}>
                 <View style={defaultStyles.pinNumberRow}>
                     <PinButton value={'1'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
@@ -283,6 +285,29 @@ const PinCode = ({
         </View>
     }
     return <></>;
+}
+
+const Pin = ({ pin, pinLength, style }: {
+    pin: string;
+    pinLength: number;
+    style?: ViewStyle | ViewStyle[]
+}) => {
+
+    const items: JSX.Element[] = [];
+    for (let i = 1; i <= pinLength; i++) {
+        items.push(<Text key={'pin_' + i} style={{
+            width: pin.length == i ? 12 : 6,
+            height: pin.length == i ? 12 : 6,
+            borderRadius: pin.length == i ? 6 : 3,
+            backgroundColor: 'white',
+            overflow: 'hidden',
+            marginHorizontal: 10
+        }} />);
+    }
+
+    return <View style={[defaultStyles.pinContainer, style]}>
+        {items}
+    </View>
 }
 
 

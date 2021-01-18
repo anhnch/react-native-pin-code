@@ -1,8 +1,9 @@
 # React Native Pincode
 
-This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simplier, more organized, just enough options. I also add the Reset PIN code feature.
+This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simpler, more organized, and just enough options. I also add the Reset PIN code feature.
+I rewrite for personal usage, so the business logic is very limited. If you find this useful, you can suggest improvements. 
 
-The options look intimidating, but don't worry. Almost all of them are optional.
+The options look intimidating but don't worry. Almost all of them are optional.
 
 ## Basic usage
 
@@ -42,7 +43,7 @@ const customTexts = {
     },
     locked: {
         title: 'Custom locked title',
-        subTitle: `Custom locked sub title`,
+        subTitle: `You have entered wrong PIN {{maxAttempt}} times. The app is locked in {{lockedDuration}}.`,
         lockedText: 'Locked',
     },
     reset: {
@@ -99,8 +100,7 @@ const App = () => {
       onSetSuccess={(newPin: string) => console.log('A new PIN has been set: ' + newPin)}
       onEnterSuccess={(pin: string) => console.log('User has entered PIN: ' + pin)}
       onResetSuccess={() => console.log('Do clean up app data when PIN is reset')}
-      onModeChanged={(mode: PinCodeT.Modes) => console.log('Mode has been changed: ', mode)}
-      onStatusChanged={(mode: PinCodeT.Modes, status: PinCodeT.Statuses) => console.log('Status has been changed: ', `${status} [${mode}]`)}
+      onModeChanged={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => console.log(`Mode has been changed, from ${lastMode} to ${newMode}`)}
       options={{
         backSpace: <Icon name='backspace' size={40} color='white' />,
         lockIcon: <Icon name='lock' size={24} color='white' />
@@ -120,7 +120,8 @@ const App = () => {
 | onSetSuccess   | callback when the mode is 'set' and the user has set a new PIN successfully.<br/>Parameters:<ul><li>pin (string, optional): the set PIN</li></ul>                                                                        | false    |         |
 | onSetCancel    | callback when the mode is 'set' and the user has canceled the setting.                                                                                                                                                   | false    |         |
 | onResetSuccess | callback when the mode is 'reset' and the PIN is cleared successfully.                                                                                                                                                   | false    |         |
-| validatePin    | A custom function to validate PIN, in case you want to use different way to store and check pin. Check the example below                                                                                                 | false    |         |
+| onModeChanged  | callback when the mode is changed by the component. ```<PinCode onModeChange={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => console.log(lastMode, newMode)}/>```                                                | false    |         |
+| checkPin       | A custom function to check PIN, in case you want to use a different way to store and check the pin. Check the example below                                                                                              | false    |         |
 | options        | Specify how the component works. Check the options below                                                                                                                                                                 | false    |         |
 | textOptions    | Allow customizing the texts in the component. Check the options below                                                                                                                                                    | false    |         |
 | styles         | Allow customizing the layout of the screens. Check the style options below                                                                                                                                               | false    |         |
@@ -128,7 +129,7 @@ const App = () => {
 ## Options
 | Name         | Description                                                                                                                                                                                                                                        | Required | Default |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| disableLock  | Do not display lock screen. By default, the locked screen is shown when maxAttempt has reached.                                                                                                                                                    | false    | false   |
+| disableLock  | By default, the locked screen is shown when maxAttempt has reached. Set this to true to disable the locked mode                                                                                                                                    | false    | false   |
 | maxAttempt   | The number of attempts when entering PIN. When user enters wrong PIN for a number of times, the Locked screen is shown                                                                                                                             | false    | 10      |
 | lockDuration | The time that the Locked screen is shown in miliseconds                                                                                                                                                                                            | false    | 60000   |
 | allowReset   | If allowReset is set to true, the "Forgot PIN?" button is displayed at the bottom of the Enter screen                                                                                                                                              | false    | true    |
@@ -196,14 +197,14 @@ The text options are grouped by screen for the ease to find. You can pass the te
 | lockedText | the locked text (this can be replaced with icon) by using the lockedIcon options | false    | Locked                                                                     | string |
 
 #### Reset screen text options
-| Name          | Description                       | Required | Default                                                | Type   |
-| ------------- | --------------------------------- | -------- | ------------------------------------------------------ | ------ |
-| title         | The Reset screen title            | false    | Forgot PIN?                                            | string |
-| subTitle      | The Reset screen sub title        | false    | Remove the PIN may wipe out the app data and settings. | string |
-| resetButton   | The reset button text             | false    | Reset                                                  | string |
-| confirm       | Ask user to confirm removeing PIN | false    | Are you sure you want remove the PIN?                  | string |
-| confirmButton | The confirm button text           | false    | Confirm                                                | string |
-| backButton    | The back button text              | false    | Back                                                   | string |
+| Name          | Description                                                                                                                                                                | Required | Default                                                | Type   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ | ------ |
+| title         | The Reset screen title                                                                                                                                                     | false    | Forgot PIN?                                            | string |
+| subTitle      | The Reset screen sub title. You can use the {{maxAttempt}} and {{lockedDuration}} placeholders to display the maxAttempt and lockedDuration (in minutes) in the sub title. | false    | Remove the PIN may wipe out the app data and settings. | string |
+| resetButton   | The reset button text                                                                                                                                                      | false    | Reset                                                  | string |
+| confirm       | Ask user to confirm removeing PIN                                                                                                                                          | false    | Are you sure you want remove the PIN?                  | string |
+| confirmButton | The confirm button text                                                                                                                                                    | false    | Confirm                                                | string |
+| backButton    | The back button text                                                                                                                                                       | false    | Back                                                   | string |
 
 ## Styles options
 The style is organized like textOptions for the ease of finding. Note that 
@@ -280,7 +281,7 @@ const App = () => {
           Keychain.resetGenericPassword();
           ...
       }}
-      validatePin={async (pin: string) => {
+      checkPin={async (pin: string) => {
           ...
           // check pin 
           const { password } = await getGenericPassword();

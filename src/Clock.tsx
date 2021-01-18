@@ -30,7 +30,7 @@ const Clock = ({
 	</View>
 }
 
-function millisToMinutesAndSeconds(milliseconds: number): string {
+export function millisToMinutesAndSeconds(milliseconds: number): string {
 	const minutes = Math.floor(milliseconds / 60000);
 	const seconds = Math.floor((milliseconds % 60000) / 1000);
 	return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;

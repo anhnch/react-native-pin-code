@@ -38,9 +38,9 @@ export namespace PinCodeT {
         onSetSuccess: (pin?: string) => void;
         onSetCancel?: () => void;
         onResetSuccess: () => void;
-        onModeChanged?: (mode?: Modes) => void;
-        onStatusChanged?: (mode?: Modes, status?: Statuses) => void;
-        validatePin?: (pin: string) => Promise<boolean>;
+        onModeChanged?: (lastMode: Modes, newMode?: Modes) => void;
+        // onStatusChanged?: (mode?: Modes, status?: Statuses) => void;
+        checkPin?: (pin: string) => Promise<boolean>;
     }
 
     export enum Modes {
@@ -52,13 +52,7 @@ export namespace PinCodeT {
 
     export enum Statuses {
         Initial = 'initial',
-        EnterFailed = 'enter.failed',
-        EnterSucceeded = 'enter.succeeded',
-
         SetOnce = 'set.once',
-        SetFailed = 'set.failed',
-        SetSucceeded = 'set.succeeded',
-
         ResetPrompted = 'reset.prompted',
         ResetSucceeded = 'reset.succeeded'
     }
@@ -66,7 +60,7 @@ export namespace PinCodeT {
     export interface Options {
         disableLock?: boolean;
         lockDuration?: number;
-        maxAttemp?: number;
+        maxAttempt?: number;
         allowReset?: boolean;
         backSpace?: JSX.Element;
         lockIcon?: JSX.Element;
@@ -128,7 +122,7 @@ export const DEFAULT = {
         },
         locked: {
             title: 'Locked',
-            subTitle: `Your have entered wrong PIN many times.\nThe app is temporarily locked.`,
+            subTitle: `Your have entered wrong PIN {{maxAttempt}} times.\nThe app is temporarily locked in {{lockDuration}}.`,
             lockedText: 'Locked',
         },
         reset: {

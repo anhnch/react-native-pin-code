@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View, Vibration, Text, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, View, Vibration, Text, TouchableOpacity, Platform } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { PinCodeT, DEFAULT } from './types';
 import PinButton from './PinButton';
-import Clock from './Clock';
+import Clock, { millisToMinutesAndSeconds } from './Clock';
+
+const PIN_KEY = '@6thanhpin';
 
 const PinCode = ({
     visible = false,
@@ -17,25 +19,21 @@ const PinCode = ({
     onSetCancel,
     onResetSuccess,
     onModeChanged,
-    onStatusChanged,
-    validatePin,
+    checkPin,
 }: PinCodeT.PinCodeT) => {
     const [pin, setPin] = useState('');
     const [lastPin, setLastPin] = useState('');
-    const [checking, setChecking] = useState(false);
     const [curMode, setCurMode] = useState<PinCodeT.Modes>(mode);
     const [status, setStatus] = useState<PinCodeT.Statuses>(PinCodeT.Statuses.Initial);
     const [failureCount, setFailureCount] = useState(0);
     const [showError, setShowError] = useState(false);
     const [curOptions, setCurOptions] = useState<PinCodeT.Options>(DEFAULT.Options);
     const [curTextOptions, setCurTextOptions] = useState<PinCodeT.TextOptions>(DEFAULT.TextOptions);
+    const [buttonsDisabled, disableButtons] = useState(false);
 
     useEffect(() => {
         setCurMode(mode);
-        setStatus(PinCodeT.Statuses.Initial);
-        setPin('');
-        setLastPin('');
-        setShowError(false);
+        initialize();
     }, [mode])
 
     useEffect(() => {
@@ -44,7 +42,7 @@ const PinCode = ({
 
     useEffect(() => {
         if (!textOptions) return;
-        // there are only 2 levels, don't use library for least dependencies
+        // there are only 2 levels, don't use deepmerge library for least dependencies
         const merged: PinCodeT.TextOptions = {
             enter: {
                 ...DEFAULT.TextOptions.enter,
@@ -66,14 +64,18 @@ const PinCode = ({
         setCurTextOptions(merged);
     }, [textOptions])
 
-    function changeMode(newMode: PinCodeT.Modes) {
-        setCurMode(newMode);
-        if (onModeChanged) onModeChanged(newMode);
+    function initialize() {
+        setPin('');
+        setLastPin('');
+        setShowError(false);
+        disableButtons(false);
+        setStatus(PinCodeT.Statuses.Initial);
     }
 
-    function changeStatus(newStatus: PinCodeT.Statuses) {
-        setStatus(newStatus);
-        if (onStatusChanged) onStatusChanged(curMode, newStatus);
+    function switchMode(newMode: PinCodeT.Modes) {
+        setCurMode(newMode);
+        initialize();
+        if (onModeChanged) onModeChanged(curMode, newMode);
     }
 
     async function onPinButtonPressed(value: string) {
@@ -96,73 +98,73 @@ const PinCode = ({
     }
 
     async function processEnterPin(newPin: string) {
-        setChecking(true);
-        let ret = false;
-        if (validatePin) {
-            ret = await validatePin(newPin);
-        } else {
-            ret = await checkPin(newPin);
-        }
-
-        setChecking(false);
+        disableButtons(true);
+        const ret = await checkThePin(newPin);
+        disableButtons(false);
         setPin('');
         if (ret) {
             setFailureCount(0);
             onEnterSuccess(newPin);
-            changeStatus(PinCodeT.Statuses.EnterSucceeded);
+            setStatus(PinCodeT.Statuses.Initial);
         } else {
-            if (!curOptions.disableLock && failureCount == curOptions.maxAttemp) {
-                changeMode(PinCodeT.Modes.Locked);
+            if (!curOptions.disableLock && failureCount >= (curOptions.maxAttempt || DEFAULT.Options.maxAttempt) - 1) {
+                switchMode(PinCodeT.Modes.Locked);
             } else {
                 setFailureCount(failureCount + 1);
-                changeStatus(PinCodeT.Statuses.EnterFailed);
+                setStatus(PinCodeT.Statuses.Initial);
+
+                if (Platform.OS === 'ios') {
+                    Vibration.vibrate(); // android requires VIBRATE permission
+                }
+
                 setShowError(true);
                 setTimeout(() => setShowError(false), 3000);
-                Vibration.vibrate();
-                setTimeout(() => {
-                    changeStatus(PinCodeT.Statuses.Initial);
-                }, 1000);
+                disableButtons(true);
+                setTimeout(() => disableButtons(false), 1000);
             }
         }
     }
 
     async function processSetPin(newPin: string) {
         // STEP 1
-        if (status == PinCodeT.Statuses.Initial || status == PinCodeT.Statuses.SetFailed) {
+        if (status == PinCodeT.Statuses.Initial) {
             setLastPin(newPin);
-            changeStatus(PinCodeT.Statuses.SetOnce);
+            setStatus(PinCodeT.Statuses.SetOnce);
             setPin('');
         }
         // STEP 2
         else if (status == PinCodeT.Statuses.SetOnce) {
             if (lastPin == newPin) { // pin matched
                 savePin(newPin);
-                changeStatus(PinCodeT.Statuses.SetSucceeded);
                 onSetSuccess(newPin);
             } else { // pin doesn't matched
-                changeStatus(PinCodeT.Statuses.SetFailed);
                 setShowError(true);
                 Vibration.vibrate();
                 setTimeout(() => setShowError(false), 3000);
                 setTimeout(() => setPin(''), 1500);
             }
+            setStatus(PinCodeT.Statuses.Initial);
             setLastPin('');
         }
     }
 
     async function onDeletePIN() {
-        await AsyncStorage.removeItem('@pin');
-        changeStatus(PinCodeT.Statuses.ResetSucceeded);
+        await AsyncStorage.removeItem(PIN_KEY);
         onResetSuccess();
+        switchMode(PinCodeT.Modes.Enter);
     }
 
-    async function checkPin(newPin: string) {
-        const savedPin = await AsyncStorage.getItem('@pin');
-        return (newPin == savedPin);
+    async function checkThePin(newPin: string) {
+        if (checkPin) {
+            return await checkPin(newPin);
+        } else {
+            const savedPin = await AsyncStorage.getItem(PIN_KEY);
+            return (newPin == savedPin);
+        }
     }
 
     async function savePin(newPin: string) {
-        await AsyncStorage.setItem('@pin', newPin);
+        await AsyncStorage.setItem(PIN_KEY, newPin);
         return;
     }
 
@@ -177,11 +179,10 @@ const PinCode = ({
                 <Text style={[defaultStyles.title, styles?.enter?.title]}>{curMode == PinCodeT.Modes.Enter ? curTextOptions.enter?.title : curTextOptions.set?.title}</Text>
                 {curMode == PinCodeT.Modes.Enter ?
                     <>
-                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enter?.title}</Text>
+                        <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.enter?.subTitle}</Text>
                         {showError && <Text style={defaultStyles.error}>{curTextOptions.enter?.error}</Text>}
-                    </> :
-                    <>
-                        {(status == PinCodeT.Statuses.Initial || status == PinCodeT.Statuses.SetFailed) && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.subTitle}</Text>}
+                    </> : <>
+                        {status == PinCodeT.Statuses.Initial && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.subTitle}</Text>}
                         {status == PinCodeT.Statuses.SetOnce && <Text style={[defaultStyles.subTitle, styles?.enter?.subTitle]}>{curTextOptions.set?.repeat}</Text>}
                         {showError && <Text style={defaultStyles.error}>{curTextOptions.set?.error}</Text>}
                     </>
@@ -195,40 +196,43 @@ const PinCode = ({
             </View>
             <View style={[defaultStyles.buttonContainer, styles?.enter?.buttonContainer]}>
                 <View style={defaultStyles.pinNumberRow}>
-                    <PinButton value={'1'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
-                    <PinButton value={'2'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
-                    <PinButton value={'3'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'1'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'2'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'3'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                 </View>
                 <View style={defaultStyles.pinNumberRow}>
-                    <PinButton value={'4'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
-                    <PinButton value={'5'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
-                    <PinButton value={'6'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'4'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'5'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'6'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                 </View>
                 <View style={defaultStyles.pinNumberRow}>
-                    <PinButton value={'7'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
-                    <PinButton value={'8'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
-                    <PinButton value={'9'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'7'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'8'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
+                    <PinButton value={'9'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                 </View>
                 <View style={defaultStyles.pinNumberRow}>
                     <View style={[defaultStyles.button, { width: 60, height: 60 }]}></View>
-                    <PinButton value={'0'} disabled={checking || status == PinCodeT.Statuses.EnterFailed} style={buttonStyle} onPress={onPinButtonPressed} />
-                    <PinButton value={'delete'} backSpace={options?.backSpace} backSpaceText={curTextOptions?.enter?.backSpace}
-                        disabled={checking || status == PinCodeT.Statuses.EnterFailed}
+                    <PinButton value={'0'} disabled={buttonsDisabled} style={buttonStyle} onPress={onPinButtonPressed} />
+                    <PinButton value={'delete'} disabled={buttonsDisabled}
+                        backSpace={options?.backSpace} backSpaceText={curTextOptions?.enter?.backSpace}
                         style={defaultStyles.button} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                 </View>
             </View>
             <View style={[defaultStyles.footer, styles?.enter?.footer]}>
                 {curMode == PinCodeT.Modes.Enter && curOptions.allowReset &&
-                    <Pressable onPress={() => changeMode(PinCodeT.Modes.Reset)}>
-                        <Text style={[{ color: 'white' }, styles?.enter?.footerText]}>{curTextOptions.enter?.footerText}</Text>
-                    </Pressable>
+                    <TouchableOpacity onPress={() => {
+                        switchMode(PinCodeT.Modes.Reset);
+                    }}>
+                        <Text style={[{ padding: 40, color: 'white' }, styles?.enter?.footerText]}>{curTextOptions.enter?.footerText}</Text>
+                    </TouchableOpacity>
                 }
                 {curMode == PinCodeT.Modes.Set &&
-                    <Pressable onPress={() => {
-                        setPin('');
-                        setLastPin('');
+                    <TouchableOpacity onPress={() => {
+                        initialize();
                         if (onSetCancel) onSetCancel();
-                    }}><Text style={{ color: 'white' }}>{curTextOptions.set?.cancel}</Text></Pressable>
+                    }}>
+                        <Text style={{ color: 'white' }}>{curTextOptions.set?.cancel}</Text>
+                    </TouchableOpacity>
                 }
             </View>
         </View >
@@ -236,7 +240,10 @@ const PinCode = ({
         return <View style={[defaultStyles.mainContainer, styles?.main]}>
             <View style={[defaultStyles.titleContainer, styles?.locked?.titleContainer]}>
                 <Text style={[defaultStyles.title, styles?.locked?.title]}>{curTextOptions.locked?.title}</Text>
-                <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>{curTextOptions.locked?.subTitle}</Text>
+                <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>
+                    {curTextOptions.locked?.subTitle?.replace('{{maxAttempt}}', (curOptions.maxAttempt || DEFAULT.Options.maxAttempt).toString())
+                        .replace('{{lockedDuration}}', millisToMinutesAndSeconds(curOptions.lockDuration || DEFAULT.Options.lockedDuration))}
+                </Text>
             </View>
             <View style={defaultStyles.pinContainer}>
                 {options?.lockIcon ? options.lockIcon : <Text style={styles?.locked?.locked}>{curTextOptions.locked?.lockedText}</Text>}
@@ -245,7 +252,7 @@ const PinCode = ({
                 <Clock style={styles?.locked?.clockContainer} textStyle={styles?.locked?.clockText}
                     duration={curOptions.lockDuration}
                     onFinish={() => {
-                        changeMode(PinCodeT.Modes.Enter);
+                        switchMode(PinCodeT.Modes.Enter);
                         setFailureCount(0);
                     }}
                 />
@@ -259,7 +266,7 @@ const PinCode = ({
             </View>
             <View style={defaultStyles.buttonContainer}>
                 {status == PinCodeT.Statuses.Initial && <>
-                    <TouchableOpacity onPress={() => changeStatus(PinCodeT.Statuses.ResetPrompted)}>
+                    <TouchableOpacity onPress={() => setStatus(PinCodeT.Statuses.ResetPrompted)}>
                         <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.resetButton}</Text>
                     </TouchableOpacity>
                 </>}
@@ -269,14 +276,13 @@ const PinCode = ({
                         <Text style={[defaultStyles.confirm, styles?.reset?.buttons]}>{curTextOptions.reset?.confirmButton}</Text>
                     </TouchableOpacity>
                 </>}
-                <TouchableOpacity onPress={() => changeMode(PinCodeT.Modes.Enter)} style={{ marginTop: 20 }}>
-                    <Text style={[{ fontSize: 14, color: 'white' }, styles?.reset?.buttons]}>{curTextOptions.reset?.backButton}</Text>
+                <TouchableOpacity onPress={() => switchMode(PinCodeT.Modes.Enter)}>
+                    <Text style={[{ fontSize: 14, paddingHorizontal: 40, paddingVertical: 20, color: 'white' }, styles?.reset?.buttons]}>{curTextOptions.reset?.backButton}</Text>
                 </TouchableOpacity>
             </View>
         </View>
     }
     return <></>;
-
 }
 
 

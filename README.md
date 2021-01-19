@@ -6,7 +6,7 @@ I rewrite for personal usage, so the business logic is very limited. If you find
 
 The options look intimidating but don't worry. Almost all of them are optional.
 
-NOTE: The component doesn't block the app and asks user to enter code for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the component in your App component and use the state management tool to switch the visibility. Check the example below.
+NOTE: The component doesn't block the app for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the PinCode component in your App component and use the state management tool to switch the visibility. Check the example below.
 
 
 ## Basic usage
@@ -268,57 +268,34 @@ The style is organized like textOptions for the ease of finding. Note that
 
 
 ## Storage
+
 To make it simple and least dependencies, I use the AsyncStorage to save pin. But you can use the callbacks to implement your own way.
+
 ```JSX
-import * as Keychain from 'react-native-keychain';
-
-const App = () => {
-  const [visible, setVisible] = useState(true);
-  const [mode, setMode] = useState<PinCodeT.Modes>(PinCodeT.Modes.Enter);
-
-  useEffect(() => {
-    getGenericPassword().then(({password}) => {
-        setVisible(password ? true : false);
-    })
-  }, [])
-
-  return <View>
-    <Button onPress={() => setMode(PinCodeT.Modes.Set)} title="Set new PIN" />
-    <Button onPress={() => setMode(PinCodeT.Modes.Enter)} title="Enter PIN" />
-    <Button onPress={() => clearPIN().then(() => console.log('PIN is cleared'))} title="Remove PIN" />
-    
-    <PinCode mode={mode} visible={visible} 
-      onSetCancel={() => setVisible(false)}
-      onEnterSuccess={(pin: string) => setVisible(false)}
-      onSetSuccess={(newPin: string) => {
-          ...
-          // store the pin in db or keychain
-          Keychain.setGenericPassword();
-          ...
-      })}
-      onResetSuccess={() => {
-          ...
-          // remove the pin from your db or keychain
-          Keychain.resetGenericPassword();
-          ...
-      }}
-      checkPin={async (pin: string) => {
-          ...
-          // check pin 
-          const { password } = await getGenericPassword();
-          return (password===pin);
-      }}
-    />
-  </View>
-}
+...
+  <PinCode mode={mode} visible={visible} 
+    onSetSuccess={(newPin: string) => {
+        Keychain.setGenericPassword('pin', newPin);
+    })}
+    onResetSuccess={() => {
+        Keychain.resetGenericPassword();
+    }}
+    checkPin={async (pin: string) => {
+        const credential = await getGenericPassword();
+        return (credential && credential.password===pin);
+    }}
+  />
+...
 ```
 
 
-## Block the app
-Here is an example how to use Recoil to manage pinState to toggle PinCode visibility and mode.
-```JSX
+## Example
 
+Here is an example how to use Recoil to manage pinState to toggle PinCode visibility and mode. I also use react-native-keychain to store pin.
+
+```JSX
 import React, { useEffect } from 'react';
+import * as Keychain from 'react-native-keychain';
 import { View, StyleSheet, AppState, AppStateStatus, Text, Button } from 'react-native';
 import { RecoilRoot, useRecoilState, atom } from 'recoil';
 import { NavigationContainer, } from '@react-navigation/native';
@@ -352,17 +329,18 @@ const HomeScreen = () => {
     </View>
 }
 
-
 const App = () => {
     const [pinState, setPinState] = useRecoilState(PinState);
 
     /** Show the Pin Enter screen on app load if user has set a PIN */
     useEffect(() => {
-        hasSetPIN().then(hasPin => setPinState({ mode: PinCodeT.Modes.Enter, hasPin, show: hasPin }));
+        Keychain.getGenericPassword().then(credential => {
+            setPinState({ ...pinState, hasPin: credential ? true : false, show: credential ? true : false });
+        });
     }, [])
 
     useEffect(() => {
-        AppState.addEventListener("change", appStateChanged)
+        AppState.addEventListener("change", appStateChanged);
         return () => AppState.removeEventListener("change", appStateChanged);
     })
 
@@ -381,11 +359,24 @@ const App = () => {
                 <MainStack.Screen name="Home" component={HomeScreen} />
             </MainStack.Navigator>
         </NavigationContainer>
+
         <PinCode mode={pinState.mode} visible={pinState.show}
             onSetCancel={() => setPinState({ ...pinState, show: false })}
-            onSetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true })}
-            onEnterSuccess={() => setPinState({ ...pinState, show: false, mode: PinCodeT.Modes.Enter })}
-            onResetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: false })}
+            onSetSuccess={async (pin: string) => {
+                await Keychain.setGenericPassword('pin', pin);
+                setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true });
+            }}
+            onEnterSuccess={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Enter, show: false })}
+            onResetSuccess={async () => {
+                /** @todo implement your business logic before removing pin */
+                // ...
+                await Keychain.resetGenericPassword();
+                setPinState({ mode: PinCodeT.Modes.Enter, show: false, hasPin: false });
+            }}
+            checkPin={async (pin: string) => {
+                const credential = await Keychain.getGenericPassword();
+                return (credential && credential.password == pin);
+            }}
             styles={{ main: styles.pincode }} />
     </>;
 }

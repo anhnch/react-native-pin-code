@@ -98,14 +98,18 @@ const App = () => {
   return <View>
     <Button onPress={() => setMode(PinCodeT.Modes.Set)} title="Set new PIN" />
     <Button onPress={() => setMode(PinCodeT.Modes.Enter)} title="Enter PIN" />
-    <Button onPress={() => clearPIN().then(() => console.log('PIN is cleared'))} title="Remove PIN" />
+    <Button onPress={() => clearPIN().then(() => 
+        console.log('PIN is cleared')
+      )} title="Remove PIN" />
     
     <PinCode mode={mode} visible={visible} 
       onSetCancel={() => setVisible(false)}
       onSetSuccess={(newPin: string) => console.log('A new PIN has been set: ' + newPin)}
       onEnterSuccess={(pin: string) => console.log('User has entered PIN: ' + pin)}
       onResetSuccess={() => console.log('Do clean up app data when PIN is reset')}
-      onModeChanged={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => console.log(`Mode has been changed, from ${lastMode} to ${newMode}`)}
+      onModeChanged={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => {
+        console.log(`Mode has been changed, from ${lastMode} to ${newMode}`)
+      }}
       options={{
         pinLength: 6,
         maxAttempt: 4,
@@ -313,73 +317,77 @@ const App = () => {
 ## Block the app
 Here is an example how to use Recoil to manage pinState to toggle PinCode visibility and mode.
 ```JSX
+
 import React, { useEffect } from 'react';
 import { View, StyleSheet, AppState, AppStateStatus, Text, Button } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RecoilRoot, useRecoilState, atom } from 'recoil';
+import { NavigationContainer, } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { PinCode, PinCodeT, clearPIN, hasSetPIN } from '@anhnch/react-native-pincode';
 
+const MainStack = createStackNavigator();
+
 const PinState = atom({
-  key: 'common.pinState',
-  default: {
-    mode: PinCodeT.Modes.Enter,
-    show: false,
-    hasPin: false
-  }
+    key: 'common.pinState',
+    default: {
+        mode: PinCodeT.Modes.Enter,
+        show: false,
+        hasPin: false
+    }
 })
 
 const HomeScreen = () => {
-  const [pinState, setPinState] = useRecoilState(PinState);
+    const [pinState, setPinState] = useRecoilState(PinState);
 
-  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    {pinState.hasPin && <Button title='Show PinCode Enter' 
-      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Enter, show: true })}/>}
-    <Button title='Set a new PIN' 
-      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Set, show: true })}/>
-    {pinState.hasPin && <Button title='Show PinCode Enter' onPress={() => {
-      clearPIN();
-      setPinState({ ...pinState, hasPin: false });
-    }}/>}
-  </View>
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 30, marginBottom: 30, fontWeight: 'bold' }}>React Native Pin Code</Text>
+        {pinState.hasPin && <Button title='Show PinCode Enter'
+            onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Enter, show: true })} />}
+        <Button title='Set a new PIN'
+            onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Set, show: true })} />
+        {pinState.hasPin && <Button title='Remove PIN' onPress={() => {
+            clearPIN();
+            setPinState({ ...pinState, hasPin: false });
+        }} />}
+    </View>
 }
 
+
 const App = () => {
-  const [pinState, setPinState] = useRecoilState(PinState);
+    const [pinState, setPinState] = useRecoilState(PinState);
 
-  /** Show the Pin Enter screen on app load if user has set a PIN */
-  useEffect(() => {
-    hasSetPIN().then(hasPin => setPinState({ mode: PinCodeT.Modes.Enter, hasPin, show: hasPin }));
-  }, [])
+    /** Show the Pin Enter screen on app load if user has set a PIN */
+    useEffect(() => {
+        hasSetPIN().then(hasPin => setPinState({ mode: PinCodeT.Modes.Enter, hasPin, show: hasPin }));
+    }, [])
 
-  useEffect(() => {
-    AppState.addEventListener("change", appStateChanged)
-    return () => AppState.removeEventListener("change", appStateChanged);
-  })
+    useEffect(() => {
+        AppState.addEventListener("change", appStateChanged)
+        return () => AppState.removeEventListener("change", appStateChanged);
+    })
 
-  /** You may want to protect the content when the app goes to inactivity or background */
-  function appStateChanged(nextAppState: AppStateStatus) {
-    if ((nextAppState == 'inactive' || nextAppState == 'background') && pinState.hasPin && pinState.mode != PinCodeT.Modes.Locked) {
-      setPinState({ ...pinState, show: true, mode: PinCodeT.Modes.Enter });
+    /** You may want to protect the content when the app goes to inactivity or background */
+    function appStateChanged(nextAppState: AppStateStatus) {
+        if ((nextAppState == 'inactive' || nextAppState == 'background')
+            && pinState.hasPin
+            && pinState.mode != PinCodeT.Modes.Locked) {
+            setPinState({ ...pinState, show: true, mode: PinCodeT.Modes.Enter });
+        }
     }
-  }
 
-  return <>
-    <NavigationContainer fallback={<Text>Loading</Text>}>
-      <MainStack.Navigator initialRouteName="Home">
-        <MainStack.Screen name="Home" component={HomeScreen}  />
-      </MainStack.Navigator>
-    </NavigationContainer>
-    <PinCode mode={pinState.mode} visible={pinState.show}
-        options={{
-            backSpace: <Icon name='backspace' size={24} color='white' />,
-            lockIcon: <Icon name='lock' size={24} color='white' />
-        }}
-        onSetCancel={() => setPinState({ ...pinState, show: false })}
-        onSetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true })}
-        onEnterSuccess={() => setPinState({ ...pinState, show: false, mode: PinCodeT.Modes.Enter })}
-        onResetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: false })}
-        styles={{ main: styles.pincode }} />
-  </>
+    return <>
+        <NavigationContainer fallback={<Text>Loading</Text>}>
+            <MainStack.Navigator initialRouteName="Home">
+                <MainStack.Screen name="Home" component={HomeScreen} />
+            </MainStack.Navigator>
+        </NavigationContainer>
+        <PinCode mode={pinState.mode} visible={pinState.show}
+            onSetCancel={() => setPinState({ ...pinState, show: false })}
+            onSetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true })}
+            onEnterSuccess={() => setPinState({ ...pinState, show: false, mode: PinCodeT.Modes.Enter })}
+            onResetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: false })}
+            styles={{ main: styles.pincode }} />
+    </>;
 }
 
 const styles = StyleSheet.create({

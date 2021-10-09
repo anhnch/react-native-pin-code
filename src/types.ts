@@ -103,7 +103,7 @@ export const DEFAULT = {
         pinLength: 4,
         allowReset: true,
         disableLock: false,
-        lockedDuration: 600000,
+        lockDuration: 600000,
         maxAttempt: 10
     },
     TextOptions: {
@@ -123,7 +123,7 @@ export const DEFAULT = {
         },
         locked: {
             title: 'Locked',
-            subTitle: `Your have entered wrong PIN {{maxAttempt}} times.\nThe app is temporarily locked in {{lockedDuration}}.`,
+            subTitle: `Your have entered wrong PIN {{maxAttempt}} times.\nThe app is temporarily locked in {{lockDuration}}.`,
             lockedText: 'Locked',
         },
         reset: {

@@ -48,7 +48,7 @@ const customTexts = {
     },
     locked: {
         title: 'Custom locked title',
-        subTitle: `You have entered wrong PIN {{maxAttempt}} times. The app is locked in {{lockedDuration}}.`,
+        subTitle: `You have entered wrong PIN {{maxAttempt}} times. The app is locked in {{lockDuration}}.`,
         lockedText: 'Locked',
     },
     reset: {
@@ -113,7 +113,7 @@ const App = () => {
       options={{
         pinLength: 6,
         maxAttempt: 4,
-        lockedDuration: 10000,
+        lockDuration: 10000,
         allowedReset: true,
         disableLock: false,
         backSpace: <Icon name='backspace' size={40} color='white' />,
@@ -218,7 +218,7 @@ The text options are grouped by screen for the ease to find. You can pass the te
 | Name          | Description                                                                                                                                                                | Required | Default                                                | Type   |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ | ------ |
 | title         | The Reset screen title                                                                                                                                                     | false    | Forgot PIN?                                            | string |
-| subTitle      | The Reset screen sub title. You can use the {{maxAttempt}} and {{lockedDuration}} placeholders to display the maxAttempt and lockedDuration (in minutes) in the sub title. | false    | Remove the PIN may wipe out the app data and settings. | string |
+| subTitle      | The Reset screen sub title. You can use the {{maxAttempt}} and {{lockDuration}} placeholders to display the maxAttempt and lockDuration (in minutes) in the sub title. | false    | Remove the PIN may wipe out the app data and settings. | string |
 | resetButton   | The reset button text                                                                                                                                                      | false    | Reset                                                  | string |
 | confirm       | Ask user to confirm removeing PIN                                                                                                                                          | false    | Are you sure you want remove the PIN?                  | string |
 | confirmButton | The confirm button text                                                                                                                                                    | false    | Confirm                                                | string |

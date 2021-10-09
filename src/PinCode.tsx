@@ -243,7 +243,7 @@ const PinCode = ({
                 <Text style={[defaultStyles.title, styles?.locked?.title]}>{curTextOptions.locked?.title}</Text>
                 <Text style={[defaultStyles.subTitle, styles?.locked?.subTitle]}>
                     {curTextOptions.locked?.subTitle?.replace('{{maxAttempt}}', (curOptions.maxAttempt || DEFAULT.Options.maxAttempt).toString())
-                        .replace('{{lockedDuration}}', millisToMinutesAndSeconds(curOptions.lockDuration || DEFAULT.Options.lockedDuration))}
+                        .replace('{{lockDuration}}', millisToMinutesAndSeconds(curOptions.lockDuration || DEFAULT.Options.lockDuration))}
                 </Text>
             </View>
             <View style={defaultStyles.pinContainer}>

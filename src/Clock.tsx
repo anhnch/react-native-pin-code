@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import { PinCodeT, DEFAULT } from './types';
 
 const Clock = ({
-	duration = DEFAULT.Options.lockedDuration,
+    duration = DEFAULT.Options.lockDuration,
 	style,
 	textStyle,
 	onFinish

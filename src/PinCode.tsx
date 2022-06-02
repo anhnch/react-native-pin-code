@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Vibration, Text, TouchableOpacity, Platform, ViewStyle } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
+
 
 import { PinCodeT, DEFAULT, PIN_KEY } from './types';
 import PinButton from './PinButton';
 import Clock, { millisToMinutesAndSeconds } from './Clock';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const PinCode = ({

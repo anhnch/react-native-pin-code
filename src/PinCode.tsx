@@ -213,7 +213,7 @@ const PinCode = ({
                 </View>
                 <View style={defaultStyles.pinNumberRow}>
                     <View style={[defaultStyles.button, { width: 60, height: 60 }]}></View>
-                    <PinButton value={'0'} disabled={buttonsDisabled} style={buttonStyle} onPress={onPinButtonPressed} />
+                    <PinButton value={'0'} disabled={buttonsDisabled} style={buttonStyle} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />
                     <PinButton value={'delete'} disabled={buttonsDisabled}
                         backSpace={options?.backSpace} backSpaceText={curTextOptions?.enter?.backSpace}
                         style={defaultStyles.button} textStyle={styles?.enter?.buttonText} onPress={onPinButtonPressed} />

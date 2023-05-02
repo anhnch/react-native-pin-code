@@ -9,6 +9,9 @@ The options look intimidating but don't worry. Almost all of them are optional.
 NOTE: The component doesn't block the app and asks user to enter code for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the component in your App component and use the state management tool to switch the visibility. Check the example below.
 
 
+NOTE: The component doesn't block the app and asks user to enter code for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the component in your App component and use the state management tool to switch the visibility. Check the example below.
+
+
 ## Basic usage
 
 ```JSX
@@ -23,6 +26,7 @@ const Screen = () => {
   </View>
 }
 ```
+
 
 
 ## Full options usage
@@ -122,6 +126,7 @@ const App = () => {
 ```
 
 
+
 ## Properties
 | Name           | Description                                                                                                                                                                                                              | Required | Default |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- |
@@ -138,6 +143,7 @@ const App = () => {
 | styles         | Allow customizing the layout of the screens. Check the style options below                                                                                                                                               | false    |         |
 
 
+
 ## Options
 | Name         | Description                                                                                                                                                                                                                                        | Required | Default |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
@@ -148,6 +154,7 @@ const App = () => {
 | allowReset   | If allowReset is set to true, the "Forgot PIN?" button is displayed at the bottom of the Enter screen                                                                                                                                              | false    | true    |
 | backSpace    | On Enter/Set screen the "Delete" button is used to delete the entered digit. But you can pass an ```<Icon name='backspace' size={24} />``` to display an icon instead. This is to remove the react-native-vector-icon dependency from the package. | false    |         |
 | lockedIcon   | On Locked screen the "Locked" text is shown above the clock. But you can pass an ```<Icon name='lock' size={24} />``` to display an icon instead. This is to remove the react-native-vector-icon dependency from the package.                      | false    |         |
+
 
 
 ## Text Options
@@ -221,6 +228,7 @@ The text options are grouped by screen for the ease to find. You can pass the te
 | backButton    | The back button text                                                                                                                                                       | false    | Back                                                   | string |
 
 
+
 ## Styles options
 The style is organized like textOptions for the ease of finding. Note that 
 
@@ -256,11 +264,13 @@ The style is organized like textOptions for the ease of finding. Note that
 | buttons        | Style of the buttons in Reset screen, including Reset and Confirm butons | false    | TextStyle |
 
 
+
 ## Utilities
 | Name      | Description                 | Return           |
 | --------- | --------------------------- | ---------------- |
 | hasSetPIN | check if user has set a PIN | Promise<boolean> |
 | clearPIN  | clear the PIN               | Promise<void>    |
+
 
 
 ## Storage
@@ -312,6 +322,85 @@ const App = () => {
 
 ## Example
 Here is an example how to use Recoil to manage the pinState to toggle PinCode visibility and mode.
+```JSX
+import React, { useEffect } from 'react';
+import { View, StyleSheet, AppState, AppStateStatus, Text, Button } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { RecoilRoot, useRecoilState, atom } from 'recoil';
+import { PinCode, PinCodeT, clearPIN, hasSetPIN } from '@anhnch/react-native-pincode';
+
+const PinState = atom({
+  key: 'common.pinState',
+  default: {
+    mode: PinCodeT.Modes.Enter,
+    show: false,
+    hasPin: false
+  }
+})
+
+const HomeScreen = () => {
+  const [pinState, setPinState] = useRecoilState(PinState);
+
+  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    {pinState.hasPin && <Button title='Show PinCode Enter' 
+      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Enter, show: true })}/>}
+    <Button title='Set a new PIN' 
+      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Set, show: true })}/>
+    {pinState.hasPin && <Button title='Show PinCode Enter' onPress={() => {
+      clearPIN();
+      setPinState({ ...pinState, hasPin: false });
+    }}/>}
+  </View>
+}
+
+const App = () => {
+  const [pinState, setPinState] = useRecoilState(PinState);
+
+  /** Show the Pin Enter screen on app load if user has set a PIN */
+  useEffect(() => {
+    hasSetPIN().then(hasPin => setPinState({ mode: PinCodeT.Modes.Enter, hasPin, show: hasPin }));
+  }, [])
+
+  useEffect(() => {
+    AppState.addEventListener("change", appStateChanged)
+    return () => AppState.removeEventListener("change", appStateChanged);
+  })
+
+  /** You may want to protect the content when the app goes to inactivity or background */
+  function appStateChanged(nextAppState: AppStateStatus) {
+    if ((nextAppState == 'inactive' || nextAppState == 'background') && pinState.hasPin && pinState.mode != PinCodeT.Modes.Locked) {
+      setPinState({ ...pinState, show: true, mode: PinCodeT.Modes.Enter });
+    }
+  }
+
+  return <>
+    <NavigationContainer fallback={<Text>Loading</Text>}>
+      <MainStack.Navigator initialRouteName="Home">
+        <MainStack.Screen name="Home" component={HomeScreen}  />
+      </MainStack.Navigator>
+    </NavigationContainer>
+    <PinCode mode={pinState.mode} visible={pinState.show}
+        options={{
+            backSpace: <Icon name='backspace' size={24} color='white' />,
+            lockIcon: <Icon name='lock' size={24} color='white' />
+        }}
+        onSetCancel={() => setPinState({ ...pinState, show: false })}
+        onSetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true })}
+        onEnterSuccess={() => setPinState({ ...pinState, show: false, mode: PinCodeT.Modes.Enter })}
+        onResetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: false })}
+        styles={{ main: styles.pincode }} />
+  </>
+}
+
+const styles = StyleSheet.create({
+    pincode: { position: 'absolute', top: 0, right: 0, left: 0, bottom: 0, zIndex: 99, backgroundColor: '#006FB3' }
+})
+
+export default () => <RecoilRoot><App /></RecoilRoot>;
+```
+
+## Block the app
+Here is an example how to use Recoil to manage pinState to toggle PinCode visibility and mode.
 ```JSX
 import React, { useEffect } from 'react';
 import { View, StyleSheet, AppState, AppStateStatus, Text, Button } from 'react-native';

@@ -1,9 +1,11 @@
 {
   "name": "@anhnch/react-native-pincode",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "Pin Code component for React Native",
   "scripts": {
-    "build": "tsc --project ./tsconfig.json"
+    "build": "tsc --project ./tsconfig.json",
+    "clean": "rimraf dist",
+    "prepublishOnly": "yarn clean && yarn build"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,15 +14,15 @@
   "license": "MIT",
   "private": false,
   "devDependencies": {
-    "@types/react": "^17.0.0",
-    "@types/react-native": "^0.63.45",
-    "react": "^17.0.1",
-    "react-native": "^0.63.4",
-    "typescript": "^4.1.3"
+    "@types/react": "^17.0.2",
+    "@types/react-native": "^0.63.4",
+    "typescript": "^5.0.3"
   },
-  "dependencies": {
-    "@react-native-community/async-storage": "^1.12.1"
-  },
+  "peerDependencies": {
+    "react": ">=17.0.2",
+    "react-native": "*"
+},
+  "dependencies": {},
   "files": [
     "dist/**/*"
   ]

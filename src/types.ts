@@ -193,12 +193,12 @@ export namespace PinCodeT {
          * Triggered when the user cancels the setting pin
          * @returns 
          */
-        onSetCancel?: () => void;
+        onSetCancel: () => void;
         /**
          * Called when the user has confirmed to reset the pin. The application should reseting the content, history, anything that belongs to the user.
          * @returns 
          */
-        onReset?: () => void;
+        onReset: () => void;
         /**
          * Called when the mode changes.
          * @param lastMode 

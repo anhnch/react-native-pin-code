@@ -19,7 +19,7 @@ export namespace PinCodeT {
          */
         content?: StyleProp<ViewStyle>;
         /**
-         * Style of the pin (circles) container which wraps the pins (circles)
+         * Style of the container which wraps the pins (dots/circles)
          */
         pinContainer?: StyleProp<ViewStyle>;
         /**
@@ -161,11 +161,15 @@ export namespace PinCodeT {
          */
         visible: boolean;
         /**
-         * Setting the mode to switch between Enter/Set/Lock/Reset screen
+         * The component has 4 modes:
+         * * `enter`: user has to enter the PIN to access
+         * * `set`: set up new PIN
+         * * `locked`: lock the user from accessing and count down.
+         * * `reset`: allow user to remove PIN.
          */
         mode: Modes;
         /**
-         * Generic options to configure how PinCode behaves
+         * Specify how the component works.
          */
         options?: Options;
         /**
@@ -177,7 +181,7 @@ export namespace PinCodeT {
          */
         styles?: PinCodeStyles,
         /**
-         * Triggered when the user enters the correct pin. The application should hide the PinCode component and show its own content.
+         * Triggered when the mode is `enter` and the user has entered the correct PIN. The application should hide the PinCode component and show its own content.
          * @param pin the entered pin
          * @see pin
          * @returns 
@@ -200,7 +204,7 @@ export namespace PinCodeT {
          */
         onReset: () => void;
         /**
-         * Called when the mode changes.
+         * Called when the mode is changed by PinCode itself. When you change the mode, it won't trigger.
          * @param lastMode 
          * @param newMode 
          * @returns 
@@ -242,33 +246,35 @@ export namespace PinCodeT {
          */
         pinLength?: number;
         /**
-         * Set this to true to always allow retry without locking the screen
+         * The number of attempts when entering PIN. When user enters wrong PIN for a number of times, the Locked screen is shown.
+         * @see lockDuration
          */
-        disableLock?: boolean;
+        maxAttempt?: number;
         /**
          * The duration (miliseconds) the screen is locked if the user enters wrong pin many times.
          * @see maxAttempt
          */
         lockDuration?: number;
         /**
-         * The number of times the users can enter wrong pin before the screen is locked
-         * @see lockDuration
+         * By default, the `locked` screen is shown when `maxAttempt` has reached. Set this to true to disable the locked mode.
          */
-        maxAttempt?: number;
+        disableLock?: boolean;
         /**
-         * Allow users to reset the pin if they forgot.
+         * If allowReset is set to true, the "Forgot PIN?" button is displayed at the bottom of the Enter screen
          */
         allowReset?: boolean;
         /**
-         * A JSX element to render as the back button instead of text
+         * On Enter/Set screen the "Delete" button is used to delete the entered digit. But you can render an icon instead.
+         * @example <Icon name='backspace' size={24} />
          */
         backSpace?: JSX.Element;
         /**
-         * Use this to render the lock icon in the `locked` mode
+         * On Locked screen the "Locked" text is shown above the countdown. But you can render an icon instead. 
+         * @example <Icon name='lock' size={24} />
          */
         lockIcon?: JSX.Element;
         /**
-         * A short duration (miliseconds) between attempts. This is also the timeout to hide the `error` message
+         * A short duration (miliseconds) between attempts that the number buttons are disabled. This is also the timeout to hide the `error` message.
          * @default 1000
          */
         retryLockDuration?: number;
@@ -308,7 +314,7 @@ export namespace PinCodeT {
          */
         subTitle?: string;
         /**
-         * Text to prompt the user to enter the pin the second time to make sure that h
+         * Text to prompt the users to enter the pin one more time to avoid typos
          */
         repeat?: string;
         /**
@@ -335,7 +341,8 @@ export namespace PinCodeT {
          */
         subTitle?: string;
         /**
-         * The message to inform the user that the app is locked
+         * the locked text (this can be replaced with icon) by using the lockIcon option
+         * @see lockIcon
          */
         lockedText?: string;
         /**
@@ -344,12 +351,29 @@ export namespace PinCodeT {
         footerText?: string;
     }
     export type ResetTextOptions = {
+        /**
+         * Title in the `reset` mode
+         */
         title?: string;
+        /**
+         * The `reset` mode sub-title. You can use the `{{maxAttempt}}` and `{{lockDuration}}` placeholders to display the `maxAttempt` and `lockDuration` (in minutes) in the sub title.
+         */
         subTitle?: string;
-        reset?: string;
+        /**
+         * Label of the reset button
+         */
         resetButton?: string,
+        /**
+         * The message to ask the user to confirm the resetting
+         */
         confirm?: string;
+        /**
+         * Label of the confirm button
+         */
         confirmButton?: string;
+        /**
+         * The footer text
+         */
         footerText?: string;
     }
 

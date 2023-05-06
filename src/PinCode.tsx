@@ -26,10 +26,6 @@ const PinCode = ({
     const [curTextOptions, setCurTextOptions] = useState<PinCodeT.TextOptions>(DEFAULT.TextOptions);
 
     useEffect(() => {
-        switchMode(mode);
-    }, [mode])
-
-    useEffect(() => {
         setCurOptions({ ...DEFAULT.Options, ...options });
     }, [options])
 
@@ -56,6 +52,10 @@ const PinCode = ({
         }
         setCurTextOptions(merged);
     }, [textOptions])
+
+    useEffect(() => {
+        setCurMode(mode);
+    }, [mode])
 
     function switchMode(newMode: PinCodeT.Modes) {
         setCurMode(newMode);

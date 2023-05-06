@@ -1,198 +1,75 @@
-# React Native Pincode
+# React Native Pin Code
 <img src="https://user-images.githubusercontent.com/131125/104954355-ab907800-59fa-11eb-9873-18916e23d611.png" width="75%"/>
 
-This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simpler, more organized and just enough options. I also add the Reset PIN code feature.
-I rewrite for personal usage, so the business logic is very limited. If you find this useful, you can suggest improvements. PRs are welcome.
+This component is inspired by https://github.com/jarden-digital/react-native-pincode. The layout looks similar but I rewrite in typescript, simpler, organized and just enough options. I also add the Reset PIN code feature which allows users to remove the pin code if they fotgot.
 
 The options look intimidating but don't worry. Almost all of them are optional.
 
-NOTE: The component doesn't block the app and asks user to enter code for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the component in your App component and use the state management tool to switch the visibility. Check the example below.
-
-
-NOTE: The component doesn't block the app and asks user to enter code for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the component in your App component and use the state management tool to switch the visibility. Check the example below.
-
+NOTE: 
+* The component doesn't block the app and asks the user to enter code for you. It just renders the Enter PIN screen, and you should style the component to cover the whole screen with absolute position, for instance. The best way is to place the component in your App component and use the state management tool to switch the visibility. Check the example below.
+* The component doesn't handle persisting the pin code for you, you have to use AsyncStorage, MMKV, KeyChain on your own.
 
 ## Basic usage
 
 ```JSX
+import { useMMKV, useMMKVString } from 'react-native-mmkv';
 import { PinCode, PinCodeT } from '@anhnch/react-native-pincode';
+
 const Screen = () => {
+  const mmkv = useMMKV();
+  const [pin, setPin] = useMMKVString('@pin', mmkv);
+  const [pinMode, setPinMode] = useState(PinCodeT.Modes.Enter);
+  const [pinVisible, setPinVisible] = useState(pin ? true : false);
+
   return <View>
-    <PinCode mode={PinCodeT.Modes.Enter} visible={true} 
+    <PinCode pin={pin} mode={pinMode} visible={pinVisible} 
       styles={{ 
-        main: { position: 'absolute', left: 0, right; 0, top: 0, bottom: 0, zIndex: 99 }
-      }} 
+        main: { ...StyleSheets.absoluteFillObject, zIndex: 99 }
+      }}
+      onSet={newPin => {
+        setPin(newPin);
+        setPinVisible(false);
+      }}
+      onSetCancel={() => setPinVisible(false)}
+      onReset={() => setPin(undefined)}
+      onEnter={() => setPinVisible(false)}
     />
   </View>
 }
 ```
 
-
-
-## Full options usage
-```JSX
-//...
-import { PinCode, PinCodeT, hasSetPIN, clearPIN } from '@anhnch/react-native-pincode';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-const customTexts = {
-    enter: {
-        title: 'Custom enter PIN title',
-        subTitle: 'custom enter PIN sub title',
-        error: 'custom enter PIN error',
-        backSpace: 'Del',
-        footerText: 'Forgot PIN?'
-    },
-    set: {
-        title: 'Custom set PIN title',
-        subTitle: 'Custom set PIN sub title',
-        repeat: 'Custom enter PIN again',
-        error: 'Custom repeat PIN error',
-        cancelText: 'Cancel',
-    },
-    locked: {
-        title: 'Custom locked title',
-        subTitle: `You have entered wrong PIN {{maxAttempt}} times. The app is locked in {{lockedDuration}}.`,
-        lockedText: 'Locked',
-    },
-    reset: {
-        title: 'Custom reset PIN title',
-        subTitle: `Custom reset PIN sub title`,
-        confirm: 'Custom confirm message'
-    }
-};
-
-const customStyles = { 
-  main: { position: 'absolute', left: 0, right; 0, top: 0, bottom: 0, zIndex: 99 },
-  enter: {
-    titleContainer: { borderWidth: 1 },
-    title: { color: 'yellow' },
-    subTitle: { color: 'red' },
-    buttonContainer: { borderWidth: 1 },
-    buttonText: { color: 'blue' },
-    buttons: { backgroundColor: 'green' },
-    footer: { borderWidth: 1 },
-    footerText: { color: 'purple' },
-    pinContainer: { borderWidth: 1 }
-  },
-  locked: {
-    titleContainer: { borderWidth: 1 },
-    title: { color: 'yellow' },
-    subTitle: { color: 'red' },
-    clockContainer: { borderWidth: 1 },
-    clockText: { color: 'red' },
-    locked: { color: 'yellow' }
-  },
-  reset: {
-    titleContainer: { borderWidth: 1 },
-    title: { color: 'yellow' },
-    subTitle: { color: 'red' },
-    buttons: { backgroundColor: 'green' }
-  }
-}
-
-const App = () => {
-  const [visible, setVisible] = useState(true);
-  const [mode, setMode] = useState<PinCodeT.Modes>(PinCodeT.Modes.Enter);
-
-  useEffect(() => {
-    hasSetPIN().then(hasPin => setVisible(hasPin));
-  }, [])
-
-  return <View>
-    <Button onPress={() => setMode(PinCodeT.Modes.Set)} title="Set new PIN" />
-    <Button onPress={() => setMode(PinCodeT.Modes.Enter)} title="Enter PIN" />
-    <Button onPress={() => clearPIN().then(() => console.log('PIN is cleared'))} title="Remove PIN" />
-    
-    <PinCode mode={mode} visible={visible} 
-      onSetCancel={() => setVisible(false)}
-      onSetSuccess={(newPin: string) => console.log('A new PIN has been set: ' + newPin)}
-      onEnterSuccess={(pin: string) => console.log('User has entered PIN: ' + pin)}
-      onResetSuccess={() => console.log('Do clean up app data when PIN is reset')}
-      onModeChanged={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => console.log(`Mode has been changed, from ${lastMode} to ${newMode}`)}
-      options={{
-        pinLength: 6,
-        maxAttempt: 4,
-        lockedDuration: 10000,
-        allowedReset: true,
-        disableLock: false,
-        backSpace: <Icon name='backspace' size={40} color='white' />,
-        lockIcon: <Icon name='lock' size={24} color='white' />
-      }}
-      textOptions={customTexts}
-      styles={customStyles} />
-  </View>
-}
-```
-
-
-
 ## Properties
-| Name           | Description                                                                                                                                                                                                              | Required | Default |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- |
-| visible        | Show or not show the component                                                                                                                                                                                           | true     | false   |
-| mode           | The component has 4 modes:<ul><li>enter: user has to enter the PIN to access</li><li>set: set up new PIN</li><li>locked: lock the user from accessing and count down.</li><li>reset: allow user to remove PIN.</li></ul> | true     | enter   |
-| onEnterSuccess | callback when the mode is 'enter' and the user has entered PIN successfully.<br/>Parameters:<ul><li>pin (string, optional): the entered PIN</li></ul>                                                                    | false    |         |
-| onSetSuccess   | callback when the mode is 'set' and the user has set a new PIN successfully.<br/>Parameters:<ul><li>pin (string, optional): the set PIN</li></ul>                                                                        | false    |         |
-| onSetCancel    | callback when the mode is 'set' and the user has canceled the setting.                                                                                                                                                   | false    |         |
-| onResetSuccess | callback when the mode is 'reset' and the PIN is cleared successfully.                                                                                                                                                   | false    |         |
-| onModeChanged  | callback when the mode is changed by the component. ```<PinCode onModeChange={(lastMode: PinCodeT.Modes, newMode: PinCodeT.Modes) => console.log(lastMode, newMode)}/>```                                                | false    |         |
-| checkPin       | A custom function to check PIN, in case you want to use a different way to store and check the pin. Check the example below                                                                                              | false    |         |
-| options        | Specify how the component works. Check the options below                                                                                                                                                                 | false    |         |
-| textOptions    | Allow customizing the texts in the component. Check the options below                                                                                                                                                    | false    |         |
-| styles         | Allow customizing the layout of the screens. Check the style options below                                                                                                                                               | false    |         |
-
+| Name           | Description                                                                                                                                                                                                                       | Required | Default |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| visible        | Show/hide the component                                                                                                                                                                                                           | true     | false   |
+| mode           | The component has 4 modes:<ul><li>enter: user has to enter the PIN to access</li><li>set: set up new PIN</li><li>locked: lock the user from accessing and count down.</li><li>reset: allow user to remove PIN.</li></ul>          | true     | enter   |
+| options        | Specify how the component works. Check the options below                                                                                                                                                                          | false    |         |
+| textOptions    | Customize the text content of the PinCode if you want to change the language or content. Check the options below                                                                                                                  | false    |         |
+| styles         | Setting the styles to customize how PinCode should look. Check the style options below                                                                                                                                            | false    |         |
+| onEnter        | Triggered when the mode is `enter` and the user has entered the correct PIN. The application should hide the PinCode component and show its own content.<br/>Parameters:<ul><li>pin (string, optional): the entered PIN</li></ul> | true     |         |
+| onSet          | Triggered when the user has successfully set the new pin. The application should persist the pin in this event.<br/>Parameters:<ul><li>pin (string, optional): the set PIN</li></ul>                                              | true     |         |
+| onSetCancel    | Triggered when the mode is `set` and user cancels the setting pin. The app should hide the pin code                                                                                                                               | true     |         |
+| onReset        | Called when the user has confirmed to reset the pin. The application may clear the content, history, anything that belongs to the user if necessary                                                                               | false    |         |
+| onModeChanged  | Called when the mode changes.<br/>Parameters:<ul><li>lastMode: the previous mode</li><li>newMode: the changed to mode</li></ul>                                                                                                   | false    |         |
 
 
 ## Options
-| Name         | Description                                                                                                                                                                                                                                        | Required | Default |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| pinLength    | Number of digits                                                                                                                                                                                                                                   | false    | 4       |
-| disableLock  | By default, the locked screen is shown when maxAttempt has reached. Set this to true to disable the locked mode                                                                                                                                    | false    | false   |
-| maxAttempt   | The number of attempts when entering PIN. When user enters wrong PIN for a number of times, the Locked screen is shown                                                                                                                             | false    | 10      |
-| lockDuration | The time that the Locked screen is shown in miliseconds                                                                                                                                                                                            | false    | 60000   |
-| allowReset   | If allowReset is set to true, the "Forgot PIN?" button is displayed at the bottom of the Enter screen                                                                                                                                              | false    | true    |
-| backSpace    | On Enter/Set screen the "Delete" button is used to delete the entered digit. But you can pass an ```<Icon name='backspace' size={24} />``` to display an icon instead. This is to remove the react-native-vector-icon dependency from the package. | false    |         |
-| lockedIcon   | On Locked screen the "Locked" text is shown above the clock. But you can pass an ```<Icon name='lock' size={24} />``` to display an icon instead. This is to remove the react-native-vector-icon dependency from the package.                      | false    |         |
-
+| Name              | Description                                                                                                                                                                          | Required | Default |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- |
+| pinLength         | Number of digits                                                                                                                                                                     | false    | 4       |
+| maxAttempt        | The number of attempts when entering PIN. When user enters wrong PIN for a number of times, the Locked screen is shown.                                                              | false    | 10      |
+| lockDuration      | The duration (miliseconds) the screen is locked if the user enters wrong pin many times.                                                                                             | false    | 60000   |
+| disableLock       | By default, the `locked` screen is shown when `maxAttempt` has reached. Set this to true to disable the locked mode.                                                                 | false    | false   |
+| allowReset        | If true, the "Forgot PIN?" button is displayed at the bottom of the `enter` screen                                                                                                   | false    | true    |
+| backSpace         | On `enter`/`set` mode the "Delete" button is used to delete the entered digit. But you can pass an ```<Icon name='backspace' size={24} />``` to display an icon instead.             | false    |         |
+| lockedIcon        | On the `locked` screen the "Locked" text is shown above the countdown. But you can pass an ```<Icon name='lock' size={24} />``` to display an icon instead.                          | false    |         |
+| retryLockDuration | A short duration (miliseconds) between attempts. This is also the timeout to hide the `error` message.                                                                          | false    | 1000    | 
 
 
 ## Text Options
-The text options are grouped by screen for the ease to find. You can pass the textOptions in this syntax
-```JSX
-<Pincode mode='enter' 
-  textOptions={{
-    enter: {
-      title: 'custom enter title',
-      subTitle: 'custom sub title',
-      error: 'wrong PIN',
-      backSpace: 'del',
-      footerText: 'Forgot PIN?'
-    },
-    set: {
-      title: 'custom set title',
-      subTitle: 'custom sub title',
-      repeat: 'Enter PIN again',
-      error: `repeated PIN doesn't match`,
-      cancelText: 'Cancel'
-    },
-    locked: {
-      title: 'custom locked title',
-      subTitle: 'custom locked sub title',
-      lockedText: 'locked'
-    },
-    reset: {
-      title: 'custom reset title',
-      subTitle: 'custom reset sub title',
-      resetButton: 'Remove PIN',
-      confirm: 'custom confirm text',
-      confirmButton: 'Remove',
-      backButton: 'Go Back'
-    }
-  }}
-/>
-```
-#### Enter screen text options
+The text options are grouped by `mode` for the ease to find.
+
+### `Enter` mode text options
 | Name       | Description                             | Required | Default                      | Type   |
 | ---------- | --------------------------------------- | -------- | ---------------------------- | ------ |
 | title      | the Enter screen title                  | false    | Enter PIN                    | string |
@@ -201,279 +78,201 @@ The text options are grouped by screen for the ease to find. You can pass the te
 | backSpace  | the text of the backspace button        | false    | Delete                       | string |
 | footerText | the text of the footer button           | false    | Forgot PIN?                  | string |
 
-#### Set screen text options
-| Name     | Description                                       | Required | Default                                   | Type   |
-| -------- | ------------------------------------------------- | -------- | ----------------------------------------- | ------ |
-| title    | the Set screen title                              | false    | Set up a new PIN                          | string |
-| subTitle | the Set screen sub title                          | false    | Enter 4 digits.                           | string |
-| repeat   | the text to ask to enter new PIN again            | false    | Enter new PIN again.                      | string |
-| error    | the error message when repeated PIN doesn't match | false    | PIN don't match. Start the process again. | string |
-| cancel   | the cancel button                                 | false    | Cancel                                    | string |
+### `Set` mode text options
+| Name       | Description                                       | Required | Default                                   | Type   |
+| ---------- | ------------------------------------------------- | -------- | ----------------------------------------- | ------ |
+| title      | the Set screen title                              | false    | Set up a new PIN                          | string |
+| subTitle   | the Set screen sub title                          | false    | Enter 4 digits.                           | string |
+| repeat     | Prompt to enter pin one more time to avoid typos  | false    | Enter new PIN again.                      | string |
+| error      | the error message when repeated PIN doesn't match | false    | PIN don't match. Start the process again. | string |
+| backSpace  | the text of the backspace button                  | false    | Delete                                    | string |
+| cancel     | the cancel button                                 | false    | Cancel                                    | string |
 
-#### Locked screen text options
+### `Locked` mode text options
 | Name       | Description                                                                      | Required | Default                                                                    | Type   |
 | ---------- | -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------- | ------ |
-| title      | the Locked screen title                                                          | false    | Locked                                                                     | string |
-| subTitle   | the Locked screen sub title                                                      | false    | Your have entered wrong PIN many times.<br/>The app is temporarily locked. | string |
-| lockedText | the locked text (this can be replaced with icon) by using the lockedIcon options | false    | Locked                                                                     | string |
+| title      | the `Locked` mode title                                                          | false    | Locked                                                                     | string |
+| subTitle   | the `Locked` mode sub title                                                      | false    | Your have entered wrong PIN many times.<br/>The app is temporarily locked. | string |
+| lockedText | the locked text (this can be replaced with icon) by using the lockIcon option    | false    | Locked                                                                     | string |
+| footerText | the `Locked` mode footer                                                         | false    |                                                                            | string |
 
-#### Reset screen text options
+### `Reset` mode text options
 | Name          | Description                                                                                                                                                                | Required | Default                                                | Type   |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ | ------ |
 | title         | The Reset screen title                                                                                                                                                     | false    | Forgot PIN?                                            | string |
-| subTitle      | The Reset screen sub title. You can use the {{maxAttempt}} and {{lockedDuration}} placeholders to display the maxAttempt and lockedDuration (in minutes) in the sub title. | false    | Remove the PIN may wipe out the app data and settings. | string |
-| resetButton   | The reset button text                                                                                                                                                      | false    | Reset                                                  | string |
-| confirm       | Ask user to confirm removeing PIN                                                                                                                                          | false    | Are you sure you want remove the PIN?                  | string |
-| confirmButton | The confirm button text                                                                                                                                                    | false    | Confirm                                                | string |
-| backButton    | The back button text                                                                                                                                                       | false    | Back                                                   | string |
+| subTitle      | The Reset screen sub title. You can use the {{maxAttempt}} and {{lockDuration}} placeholders to display the maxAttempt and lockDuration (in minutes) in the sub title.     | false    | Remove the PIN may wipe out the app data and settings. | string |
+| resetButton   | Label of the reset button                                                                                                                                                  | false    | Reset                                                  | string |
+| confirm       | The message to ask the user to confirm the resetting                                                                                                                       | false    | Are you sure you want remove the PIN?                  | string |
+| confirmButton | Label of the confirm button                                                                                                                                                | false    | Confirm                                                | string |
+| footerText    | The footer text                                                                                                                                                            | false    | Back                                                   | string |
 
 
 
 ## Styles options
-The style is organized like textOptions for the ease of finding. Note that 
-
-#### Enter screen styles
-| Name            | Description                                | Required | Default |
-| --------------- | ------------------------------------------ | -------- | ------- |
-| titleContainer  | the Enter screen title container ViewStyle | false    |         |
-| title           | TextStyle of the title                     | false    |         |
-| subTitle        | TextStyle of the sub title                 | false    |         |
-| pinContainer    | ViewStyle which wraps the PIN dots         | false    |         |
-| buttonContainer | ViewStyle which wraps digit buttons        | false    |         |
-| buttons         | ViewStyle which wraps digit buttons        | false    |         |
-| buttonText      | TextStyle of each button                   | false    |         |
-| footer          | ViewStyle the footer                       | false    |         |
-| footerText      | TextStyle the footer                       | false    |         |
-
-#### Locked screen styles
-| Name           | Description                                                                            | Required | Type      |
-| -------------- | -------------------------------------------------------------------------------------- | -------- | --------- |
-| titleContainer | the Enter screen title container ViewStyle                                             | false    | ViewStyle |
-| title          | Style of the title                                                                     | false    | TextStyle |
-| subTitle       | Style of the sub title                                                                 | false    | TextStyle |
-| clockContainer | Style of the clock component                                                           | false    | ViewStyle |
-| clockText      | Style of the count down text                                                           | false    | TextStyle |
-| locked         | Style of the locked Text. If you use custom icon for this, you can set the icon style. | false    | TextStyle |
-
-#### Reset screen styles
-| Name           | Description                                                              | Required | Type      |
-| -------------- | ------------------------------------------------------------------------ | -------- | --------- |
-| titleContainer | Style of title container                                                 | false    | ViewStyle |
-| title          | Style of the title                                                       | false    | TextStyle |
-| subTitle       | Style of the sub title                                                   | false    | TextStyle |
-| buttons        | Style of the buttons in Reset screen, including Reset and Confirm butons | false    | TextStyle |
-
-
-
-## Utilities
-| Name      | Description                 | Return           |
-| --------- | --------------------------- | ---------------- |
-| hasSetPIN | check if user has set a PIN | Promise<boolean> |
-| clearPIN  | clear the PIN               | Promise<void>    |
-
-
-
-## Storage
-To make it simple and least dependencies, I use the AsyncStorage to save pin. But you can use the callbacks to implement your own way.
+The styles are grouped by mode. All mode layout has 3 sections: header, content, footer. The default values can be accessed by importing the `DEFAULT` from the package
 ```JSX
-import * as Keychain from 'react-native-keychain';
-
-const App = () => {
-  const [visible, setVisible] = useState(true);
-  const [mode, setMode] = useState<PinCodeT.Modes>(PinCodeT.Modes.Enter);
-
-  useEffect(() => {
-    getGenericPassword().then(({password}) => {
-        setVisible(password ? true : false);
-    })
-  }, [])
-
-  return <View>
-    <Button onPress={() => setMode(PinCodeT.Modes.Set)} title="Set new PIN" />
-    <Button onPress={() => setMode(PinCodeT.Modes.Enter)} title="Enter PIN" />
-    <Button onPress={() => clearPIN().then(() => console.log('PIN is cleared'))} title="Remove PIN" />
-    
-    <PinCode mode={mode} visible={visible} 
-      onSetCancel={() => setVisible(false)}
-      onEnterSuccess={(pin: string) => setVisible(false)}
-      onSetSuccess={(newPin: string) => {
-          ...
-          // store the pin in db or keychain
-          Keychain.setGenericPassword();
-          ...
-      })}
-      onResetSuccess={() => {
-          ...
-          // remove the pin from your db or keychain
-          Keychain.resetGenericPassword();
-          ...
-      }}
-      checkPin={async (pin: string) => {
-          ...
-          // check pin 
-          const { password } = await getGenericPassword();
-          return (password===pin);
-      }}
-    />
-  </View>
-}
+import { DEFAULT } from '@anhnch/react-native-pin-code';
+// DEFAULT.Styles.enter
+// DEFAULT.Styles.set
 ```
 
+### `Enter` mode styles
+| Name               | Description                                                                     | Required | Type      |
+| ------------------ | ------------------------------------------------------------------------------- | -------- | --------- |
+| header             | Style of the header container which wraps: `title`, `subTitle`, and `errorText` | false    | ViewStyle |
+| title              | Style of the title                                                              | false    | TextStyle |
+| subTitle           | Style of the sub title                                                          | false    | TextStyle |
+| errorText          | Style of the error                                                              | false    | TextStyle |
+| content            | Style of the container which wraps `pinContainer` and `buttonContainer`         | false    | ViewStyle |
+| pinContainer       | Style of the container which wraps the pins (dots/circles)                      | false    | ViewStyle |
+| pin                | Style of the pins (dots/circles)                                                | false    | ViewStyle |
+| enteredPin         | Style of the entered pins (big dots/circles)                                    | false    | ViewStyle |
+| buttonContainer    | Style of the View that wraps the number buttons and the backspace button        | false    | ViewStyle |
+| buttonRow          | Style of the View that wraps the rows of number buttons                         | false    | ViewStyle |
+| button             | Style which wraps digit buttons                                                 | false    | ViewStyle |
+| buttonText         | Style of the number button's label                                              | false    | TextStyle |
+| buttonTextDisabled | Style of the button text if disabled                                            | false    | TextStyle |
+| footer             | Style of the footer container                                                   | false    | ViewStyle |
+| footerText         | Style the footer text                                                           | false    | TextStyle |
+
+### `Set` mode styles
+Same as the `enter` mode styles, but without the `buttonTextDisabled`
+
+### `Locked` mode styles
+| Name               | Description                                                                     | Required | Type      |
+| ------------------ | ------------------------------------------------------------------------------- | -------- | --------- |
+| header             | Style of the header container which wraps: `title`, `subTitle`                  | false    | ViewStyle |
+| title              | Style of the title                                                              | false    | TextStyle |
+| subTitle           | Style of the sub title                                                          | false    | TextStyle |
+| content            | Style of the container which wraps the `lock` text/icon and the `CountDown`     | false    | ViewStyle |
+| countdown          | Style of the container that wraps the `CountDown`                               | false    | ViewStyle |
+| countdownText      | Style of the remaining time                                                     | false    | TextStyle |
+| lock               | Style of the lock text. You can render a lock icon instead by setting `lockIcon`| false    | TextStyle |
+| footer             | Style of the footer container                                                   | false    | ViewStyle |
+| footerText         | Style the footer text                                                           | false    | TextStyle |
+
+### `Reset` mode styles
+| Name               | Description                                                                     | Required | Type      |
+| ------------------ | ------------------------------------------------------------------------------- | -------- | --------- |
+| header             | Style of the header container which wraps: `title`, `subTitle`                  | false    | ViewStyle |
+| title              | Style of the title                                                              | false    | TextStyle |
+| subTitle           | Style of the sub title                                                          | false    | TextStyle |
+| content            | Style of the container which wraps the `lock` text/icon and the `CountDown`     | false    | ViewStyle |
+| resetButton        | Styles of the reset button                                                      | false    | ViewStyle |
+| confirmText        | Style of the confirm message                                                    | false    | TextStyle |
+| footer             | Style of the footer container                                                   | false    | ViewStyle |
+| footerText         | Style the footer text                                                           | false    | TextStyle |
 
 ## Example
-Here is an example how to use Recoil to manage the pinState to toggle PinCode visibility and mode.
+Here is an example how to use Recoil to switch visibility and mode; and use MMKV to persist the pin code.
+
 ```JSX
 import React, { useEffect } from 'react';
 import { View, StyleSheet, AppState, AppStateStatus, Text, Button } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RecoilRoot, useRecoilState, atom } from 'recoil';
-import { PinCode, PinCodeT, clearPIN, hasSetPIN } from '@anhnch/react-native-pincode';
+import { NavigationContainer, } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { useMMKV, useMMKVString } from 'react-native-mmkv';
+import { PinCode, PinCodeT } from '@anhnch/react-native-pincode';
 
-const PinState = atom({
-  key: 'common.pinState',
-  default: {
-    mode: PinCodeT.Modes.Enter,
-    show: false,
-    hasPin: false
-  }
+const MainStack = createStackNavigator();
+
+const PinCodeVisibleAtom = atom({
+    key: 'common.PinCodeVisibleAtom',
+    default: true
 })
 
-const HomeScreen = () => {
-  const [pinState, setPinState] = useRecoilState(PinState);
+const PinCodeModeAtom = atom({
+    key: 'common.PinCodeModeAtom',
+    default: PinCodeT.Modes.Enter
+})
 
-  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    {pinState.hasPin && <Button title='Show PinCode Enter' 
-      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Enter, show: true })}/>}
-    <Button title='Set a new PIN' 
-      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Set, show: true })}/>
-    {pinState.hasPin && <Button title='Show PinCode Enter' onPress={() => {
-      clearPIN();
-      setPinState({ ...pinState, hasPin: false });
-    }}/>}
-  </View>
+const customTextes: PinCodeT.TextOptions = {
+  enter: {
+    subTitle: 'Enter PIN to access.',
+  },
+  set: {
+    subTitle: 'Enter {{pinLength}} digits.'
+  },
+  locked: {
+    title: 'Locked',
+    subTitle: `Wrong PIN {{maxAttempt}} times.\nTemporarily locked in {{lockDuration}}.`
+  }
+};
+
+const EnterAndSet: PinCodeT.EnterSetStyles = {
+    header: { justifyContent: 'flex-start', alignItems: 'center', minHeight: 100 },
+    title: { fontSize: 24 }
+}
+
+const customStyles:PinCodeT.Styles = { 
+  main: { ...StyleSheet.absoluteFillObject, zIndex: 99, backgroundColor: 'blue' },
+  enter: {
+    ...EnterAndSet,
+    buttonTextDisabled: { color: 'gray' },
+  },
+  set: EnterAndSet,
+  locked: {
+    countdown: { borderColor: 'black' },
+    countdownText: { color: 'black' },
+  },
+  reset: {
+    confirmText: { color: 'red' },
+  }
+}
+
+const HomeScreen = () => {
+    const [pinVisible, setPinVisible] = useRecoilState(PinCodeVisibleAtom);
+    const [pinMode, setPinMode] = useRecoilState(PinCodeModeAtom);
+
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ fontSize: 30, marginBottom: 30, fontWeight: 'bold' }}>React Native Pin Code</Text>
+        <Button title='Show PinCode Enter' onPress={() => {
+          setPinMode(PinCodeT.Modes.Enter);
+          setPinVisible(true);
+        }} />
+        <Button title='Set a new PIN' onPress={() => {
+          setPinMode(PinCodeT.Modes.Set);
+          setPinVisible(true);
+        }} />
+    </View>
 }
 
 const App = () => {
-  const [pinState, setPinState] = useRecoilState(PinState);
-
-  /** Show the Pin Enter screen on app load if user has set a PIN */
-  useEffect(() => {
-    hasSetPIN().then(hasPin => setPinState({ mode: PinCodeT.Modes.Enter, hasPin, show: hasPin }));
-  }, [])
-
-  useEffect(() => {
-    AppState.addEventListener("change", appStateChanged)
-    return () => AppState.removeEventListener("change", appStateChanged);
-  })
-
-  /** You may want to protect the content when the app goes to inactivity or background */
-  function appStateChanged(nextAppState: AppStateStatus) {
-    if ((nextAppState == 'inactive' || nextAppState == 'background') && pinState.hasPin && pinState.mode != PinCodeT.Modes.Locked) {
-      setPinState({ ...pinState, show: true, mode: PinCodeT.Modes.Enter });
-    }
-  }
-
-  return <>
-    <NavigationContainer fallback={<Text>Loading</Text>}>
-      <MainStack.Navigator initialRouteName="Home">
-        <MainStack.Screen name="Home" component={HomeScreen}  />
-      </MainStack.Navigator>
-    </NavigationContainer>
-    <PinCode mode={pinState.mode} visible={pinState.show}
-        options={{
-            backSpace: <Icon name='backspace' size={24} color='white' />,
-            lockIcon: <Icon name='lock' size={24} color='white' />
-        }}
-        onSetCancel={() => setPinState({ ...pinState, show: false })}
-        onSetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true })}
-        onEnterSuccess={() => setPinState({ ...pinState, show: false, mode: PinCodeT.Modes.Enter })}
-        onResetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: false })}
-        styles={{ main: styles.pincode }} />
-  </>
+    return <>
+      <NavigationContainer fallback={<Text>Loading</Text>}>
+          <MainStack.Navigator initialRouteName="Home">
+              <MainStack.Screen name="Home" component={HomeScreen} />
+          </MainStack.Navigator>
+      </NavigationContainer>
+      <PinCodeComp />
+    </>;
 }
 
-const styles = StyleSheet.create({
-    pincode: { position: 'absolute', top: 0, right: 0, left: 0, bottom: 0, zIndex: 99, backgroundColor: '#006FB3' }
-})
+const PinCodeComp = () => {
+  const mmkv = useMMKV();
+  const [pin, setPin] = useMMKVString('@pin', mmkv);
+  const [pinVisible, setPinVisible] = useRecoilValue(PinCodeVisibleAtom);
+  const [pinMode, setPinMode] = useRecoilValue(PinCodeModeAtom);
 
-export default () => <RecoilRoot><App /></RecoilRoot>;
-```
-
-## Block the app
-Here is an example how to use Recoil to manage pinState to toggle PinCode visibility and mode.
-```JSX
-import React, { useEffect } from 'react';
-import { View, StyleSheet, AppState, AppStateStatus, Text, Button } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { RecoilRoot, useRecoilState, atom } from 'recoil';
-import { PinCode, PinCodeT, clearPIN, hasSetPIN } from '@anhnch/react-native-pincode';
-
-const PinState = atom({
-  key: 'common.pinState',
-  default: {
-    mode: PinCodeT.Modes.Enter,
-    show: false,
-    hasPin: false
-  }
-})
-
-const HomeScreen = () => {
-  const [pinState, setPinState] = useRecoilState(PinState);
-
-  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    {pinState.hasPin && <Button title='Show PinCode Enter' 
-      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Enter, show: true })}/>}
-    <Button title='Set a new PIN' 
-      onPress={() => setPinState({ ...pinState, mode: PinCodeT.Modes.Set, show: true })}/>
-    {pinState.hasPin && <Button title='Show PinCode Enter' onPress={() => {
-      clearPIN();
-      setPinState({ ...pinState, hasPin: false });
-    }}/>}
-  </View>
+  return <PinCode pin={pin} visible={visible} mode={pinMode}
+      options={{
+        backSpace: <Icon name='backspace' size={24} color='white' />,
+        lockIcon: <Icon name='lock' size={24} color='white' />,
+        retryLockDuration: 1000,
+        maxAttempt: 5
+      }}
+      textOptions={customTextes}
+      styles={customStyles} 
+      onEnter={() => setPinVisible(false)}
+      onSet={newPin => {
+          setPin(newPin);
+          setPinVisible(false);
+      }}
+      onSetCancel={() => setPinVisible(false)}
+      onReset={() => setPin(undefined)}
+    />
 }
-
-const App = () => {
-  const [pinState, setPinState] = useRecoilState(PinState);
-
-  /** Show the Pin Enter screen on app load if user has set a PIN */
-  useEffect(() => {
-    hasSetPIN().then(hasPin => setPinState({ mode: PinCodeT.Modes.Enter, hasPin, show: hasPin }));
-  }, [])
-
-  useEffect(() => {
-    AppState.addEventListener("change", appStateChanged)
-    return () => AppState.removeEventListener("change", appStateChanged);
-  })
-
-  /** You may want to protect the content when the app goes to inactivity or background */
-  function appStateChanged(nextAppState: AppStateStatus) {
-    if ((nextAppState == 'inactive' || nextAppState == 'background') && pinState.hasPin && pinState.mode != PinCodeT.Modes.Locked) {
-      setPinState({ ...pinState, show: true, mode: PinCodeT.Modes.Enter });
-    }
-  }
-
-  return <>
-    <NavigationContainer fallback={<Text>Loading</Text>}>
-      <MainStack.Navigator initialRouteName="Home">
-        <MainStack.Screen name="Home" component={HomeScreen}  />
-      </MainStack.Navigator>
-    </NavigationContainer>
-    <PinCode mode={pinState.mode} visible={pinState.show}
-        options={{
-            backSpace: <Icon name='backspace' size={24} color='white' />,
-            lockIcon: <Icon name='lock' size={24} color='white' />
-        }}
-        onSetCancel={() => setPinState({ ...pinState, show: false })}
-        onSetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: true })}
-        onEnterSuccess={() => setPinState({ ...pinState, show: false, mode: PinCodeT.Modes.Enter })}
-        onResetSuccess={() => setPinState({ show: false, mode: PinCodeT.Modes.Enter, hasPin: false })}
-        styles={{ main: styles.pincode }} />
-  </>
-}
-
-const styles = StyleSheet.create({
-    pincode: { position: 'absolute', top: 0, right: 0, left: 0, bottom: 0, zIndex: 99, backgroundColor: '#006FB3' }
-})
 
 export default () => <RecoilRoot><App /></RecoilRoot>;
 ```

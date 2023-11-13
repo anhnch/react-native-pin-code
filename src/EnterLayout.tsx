@@ -5,7 +5,7 @@ import { DEFAULT } from './common';
 import NumbersPanel from './components/NumbersPanel';
 import Pin from './components/Pin';
 
-const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, onEnter, onReset, onMaxAttempt }: {
+const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, onEnter, onReset, onMaxAttempt, onEnterCancel }: {
     pin: string | undefined;
     styles?: PinCodeT.EnterStyles;
     mode: PinCodeT.Modes;
@@ -15,6 +15,7 @@ const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, on
     onEnter: (newPin: string) => void;
     onMaxAttempt: () => void;
     onReset: () => void;
+    onEnterCancel: ()=>void;
 }) => {
     const [curPin, setCurPin] = useState('');
     const [disabled, disableButtons] = useState(false);
@@ -83,7 +84,7 @@ const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, on
             />
         </View>
         <View style={[DEFAULT.Styles.enter?.footer, styles?.footer]}>
-            {options?.allowReset && <Pressable onPress={onReset} style={state => ({ opacity: state.pressed ? 0.6 : 1 })}>
+            {options?.allowReset && <Pressable onPress={onEnterCancel} style={state => ({ opacity: state.pressed ? 0.6 : 1 })}>
                 <Text style={[DEFAULT.Styles.enter?.footerText, styles?.footerText]}>{textOptions.enter?.footerText || DEFAULT.TextOptions.enter?.footerText}</Text>
             </Pressable>}
         </View>

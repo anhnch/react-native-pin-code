@@ -210,7 +210,9 @@ export namespace PinCodeT {
          * @returns 
          */
         onModeChanged?: (lastMode: Modes, newMode?: Modes) => void;
+        onEnterCancel: () => void;
     }
+
 
     export enum Modes {
         /**

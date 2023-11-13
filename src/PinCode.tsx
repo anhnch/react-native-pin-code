@@ -19,7 +19,8 @@ const PinCode = ({
     onSet,
     onSetCancel,
     onReset,
-    onModeChanged
+    onModeChanged,
+    onEnterCancel
 }: PinCodeT.PinCodeProps) => {
     const [curMode, setCurMode] = useState<PinCodeT.Modes>(mode);
     const [curOptions, setCurOptions] = useState<PinCodeT.Options>(DEFAULT.Options);
@@ -71,6 +72,7 @@ const PinCode = ({
                 onEnter={onEnter}
                 onMaxAttempt={() => switchMode(PinCodeT.Modes.Locked)}
                 onReset={() => switchMode(PinCodeT.Modes.Reset)}
+                         onEnterCancel={onEnterCancel}
                 styles={styles?.enter}
             />
         }

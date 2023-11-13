@@ -14,14 +14,18 @@
   "license": "MIT",
   "private": false,
   "devDependencies": {
-    "@types/react": "^17.0.2",
-    "@types/react-native": "^0.63.4",
-    "typescript": "^5.0.3"
+    "@types/react": "^18.2.37",
+    "@types/react-native": "^0.72.6",
+    "typescript": "^5.2.2"
   },
   "peerDependencies": {
     "react": ">=17.0.2",
     "react-native": "*"
-},
+  },
+  "resolutions": {
+    "@types/react": "18.2.37",
+    "@types/react-dom": "17.0.14"
+  },
   "dependencies": {},
   "files": [
     "dist/**/*"

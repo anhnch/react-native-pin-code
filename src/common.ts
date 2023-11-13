@@ -6,7 +6,7 @@ const EnterSet: PinCodeT.EnterSetStyles = {
     title: { color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 20 },
     subTitle: { textAlign: 'center', marginTop: 20, color: 'white' },
     pinContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 80 },
-    pin: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'white', overflow: 'hidden', marginHorizontal: 10 },
+    pin: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'red', overflow: 'hidden', marginHorizontal: 10 },
     enteredPin: { width: 12, height: 12, borderRadius: 6 },
     content: { justifyContent: 'flex-start', alignItems: 'center' },
     buttonRow: { flexDirection: 'row', marginVertical: 10, justifyContent: 'space-between' },

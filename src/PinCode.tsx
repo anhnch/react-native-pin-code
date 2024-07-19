@@ -19,7 +19,8 @@ const PinCode = ({
     onSet,
     onSetCancel,
     onReset,
-    onModeChanged
+    onModeChanged,
+    onEnterValidation
 }: PinCodeT.PinCodeProps) => {
     const [curMode, setCurMode] = useState<PinCodeT.Modes>(mode);
     const [curOptions, setCurOptions] = useState<PinCodeT.Options>(DEFAULT.Options);
@@ -64,35 +65,52 @@ const PinCode = ({
 
     if (!visible) return null;
 
-    return <View style={[DEFAULT.Styles.main, styles?.main]}>
-        {(curMode == PinCodeT.Modes.Enter) &&
-            <EnterLayout pin={pin} mode={curMode}
-                options={curOptions} textOptions={curTextOptions}
-                onEnter={onEnter}
-                onMaxAttempt={() => switchMode(PinCodeT.Modes.Locked)}
-                onReset={() => switchMode(PinCodeT.Modes.Reset)}
-                styles={styles?.enter}
-            />
-        }
-        {(curMode == PinCodeT.Modes.Set) &&
-            <SetLayout pin={pin} mode={curMode}
-                options={curOptions} textOptions={curTextOptions}
-                onSet={onSet}
-                onReset={() => switchMode(PinCodeT.Modes.Reset)}
-                onSetCancel={onSetCancel}
-                styles={styles?.enter}
-            />
-        }
-        {(curMode == PinCodeT.Modes.Locked) &&
-            <LockedLayout options={curOptions} textOptions={curTextOptions.locked} styles={styles?.locked}
-                onClockFinish={() => switchMode(PinCodeT.Modes.Enter)} />}
-        {(curMode == PinCodeT.Modes.Reset) &&
-            <ResetLayout styles={styles?.reset} textOptions={curTextOptions.reset}
-                options={curOptions}
-                onReset={onReset}
-                onCancel={() => switchMode(PinCodeT.Modes.Enter)}
-            />}
-    </View>
+    return (
+      <View style={[DEFAULT.Styles.main, styles?.main]}>
+        {curMode == PinCodeT.Modes.Enter && (
+          <EnterLayout
+            pin={pin}
+            mode={curMode}
+            options={curOptions}
+            textOptions={curTextOptions}
+            onEnter={onEnter}
+            onMaxAttempt={() => switchMode(PinCodeT.Modes.Locked)}
+            onReset={() => switchMode(PinCodeT.Modes.Reset)}
+            styles={styles?.enter}
+            onEnterValidation={onEnterValidation}
+          />
+        )}
+        {curMode == PinCodeT.Modes.Set && (
+          <SetLayout
+            pin={pin}
+            mode={curMode}
+            options={curOptions}
+            textOptions={curTextOptions}
+            onSet={onSet}
+            onReset={() => switchMode(PinCodeT.Modes.Reset)}
+            onSetCancel={onSetCancel}
+            styles={styles?.enter}
+          />
+        )}
+        {curMode == PinCodeT.Modes.Locked && (
+          <LockedLayout
+            options={curOptions}
+            textOptions={curTextOptions.locked}
+            styles={styles?.locked}
+            onClockFinish={() => switchMode(PinCodeT.Modes.Enter)}
+          />
+        )}
+        {curMode == PinCodeT.Modes.Reset && (
+          <ResetLayout
+            styles={styles?.reset}
+            textOptions={curTextOptions.reset}
+            options={curOptions}
+            onReset={onReset}
+            onCancel={() => switchMode(PinCodeT.Modes.Enter)}
+          />
+        )}
+      </View>
+    );
 }
 
 export default PinCode;

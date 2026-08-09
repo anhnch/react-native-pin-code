@@ -15,12 +15,13 @@ const PinCode = ({
     options,
     textOptions,
     styles,
+    pinColor = 'white',
     onEnter,
     onSet,
     onSetCancel,
     onReset,
     onModeChanged
-}: PinCodeT.PinCodeProps) => {
+}: PinCodeT.PinCodeProps & { pinColor?: string }) => {
     const [curMode, setCurMode] = useState<PinCodeT.Modes>(mode);
     const [curOptions, setCurOptions] = useState<PinCodeT.Options>(DEFAULT.Options);
     const [curTextOptions, setCurTextOptions] = useState<PinCodeT.TextOptions>(DEFAULT.TextOptions);
@@ -72,6 +73,7 @@ const PinCode = ({
                 onMaxAttempt={() => switchMode(PinCodeT.Modes.Locked)}
                 onReset={() => switchMode(PinCodeT.Modes.Reset)}
                 styles={styles?.enter}
+                pinColor={pinColor}
             />
         }
         {(curMode == PinCodeT.Modes.Set) &&
@@ -81,6 +83,7 @@ const PinCode = ({
                 onReset={() => switchMode(PinCodeT.Modes.Reset)}
                 onSetCancel={onSetCancel}
                 styles={styles?.enter}
+                pinColor={pinColor}
             />
         }
         {(curMode == PinCodeT.Modes.Locked) &&

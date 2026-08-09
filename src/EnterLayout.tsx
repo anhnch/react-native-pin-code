@@ -5,7 +5,7 @@ import { DEFAULT } from './common';
 import NumbersPanel from './components/NumbersPanel';
 import Pin from './components/Pin';
 
-const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, onEnter, onReset, onMaxAttempt }: {
+const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, onEnter, onReset, onMaxAttempt, pinColor = 'white' }: {
     pin: string | undefined;
     styles?: PinCodeT.EnterStyles;
     mode: PinCodeT.Modes;
@@ -15,6 +15,7 @@ const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, on
     onEnter: (newPin: string) => void;
     onMaxAttempt: () => void;
     onReset: () => void;
+    pinColor?: string;
 }) => {
     const [curPin, setCurPin] = useState('');
     const [disabled, disableButtons] = useState(false);
@@ -73,8 +74,8 @@ const EnterLayout = ({ pin, styles, mode, textOptions, options, onSwitchMode, on
         <View style={[DEFAULT.Styles.enter?.content, styles?.content]}>
             <Pin pin={curPin} pinLength={options?.pinLength || DEFAULT.Options.pinLength || 4}
                 style={styles?.pinContainer}
-                pinStyle={[DEFAULT.Styles.enter?.pin, styles?.pin]}
-                enteredPinStyle={[DEFAULT.Styles.enter?.enteredPin, styles?.enteredPin]} />
+                pinStyle={[DEFAULT.Styles.enter?.pin, styles?.pin, { backgroundColor: pinColor }]}
+                enteredPinStyle={[DEFAULT.Styles.enter?.enteredPin, styles?.enteredPin, { backgroundColor: pinColor }]} />
 
             <NumbersPanel disabled={disabled} onButtonPress={onNumberPress}
                 backSpace={options?.backSpace} backSpaceText={textOptions.enter?.backSpace}
